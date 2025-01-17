@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package proto;
+import "proto/common/common.proto";
+
+message CommonCfg {
+  string type = 1;
+  string name = 2;
+  bool enabled = 3;
+//  proto.source.skywalking.SkyWalking skyWalking = 1;
+  proto.common.Any cfg = 4;
+}
+
+
+
+message PipelineConfig {
+  string name = 1;
+  string loadDir = 2;
+  CommonCfg source = 3;
+  CommonCfg intercept = 4;
+  CommonCfg sink = 5;
+}
+
+message RunnerConfig {
+  repeated PipelineConfig pipelineConfig = 1;
+  uint32 threadNumber = 2;
+}

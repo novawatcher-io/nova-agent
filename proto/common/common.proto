@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package proto.common;
+
+
+message NetworkConfig {
+    // 主机支持多个配置
+    string host = 1;
+    uint32 port = 2;
+}
+
+
+message Any {
+    // The type URL.  Must be in the format of:
+    //   "<scheme>://<language>/<package>/<type>"
+    // where:<scheme> is the name of the protocol. The default is "type.googleapis.com".
+    // <language> is the name of the language, e.g. "proto2" or "proto3"
+    // <package> is the name of the package. If the message type is not in a package
+    // the "" should be used.
+    // <type> is the fully qualified name of the type, including the package name.
+    //
+    // Example: "type.googleapis.com/google.protobuf.Any"
+    string type_url = 1;
+
+    // Must be a valid serialized protocol buffer of the above type.
+    bytes value = 2;
+}

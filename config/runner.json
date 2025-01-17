@@ -1,0 +1,6 @@
+{
+  "threadNumber": 2,
+  "pipelineConfig": [{
+    "loadDir": "/home/zhanglei/swoole-monitor/trace-agent/config/pipeline/host/pipeline.json"
+  }]
+}

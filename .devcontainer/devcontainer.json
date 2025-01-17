@@ -1,0 +1,11 @@
+{
+    "name": "CppDev",
+    "image": "aronic/cppdev:20241202Large",
+    "customizations":{
+        "vscode": {
+            "extensions": [
+                "ms-vscode.cpptools-extension-pack"
+            ]
+        }
+    }
+}

@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package trace_agent.config;
+
+message NetworkConfig {
+  // 主机支持多个配置
+  string host = 1;
+  uint32 port = 2;
+}
+
+message ContainerCollectorConfig {
+  bool enable = 1;
+  string container_runtime = 2;
+  string container_unix_domain_socket = 3;
+}
+
+message TraceServerConfig {
+  bool enable = 1;
+  string address = 2;
+  string type = 3;
+}
+
+message HostCollectConfig {
+  bool enable = 1;
+}
+
+message TraceAgentConfig {
+  string cluster = 1;
+  // report metadata
+  string company_uuid = 2;
+  // remote grpc address
+  NetworkConfig node_report_addr = 3;
+  // collector sampling period
+  int32 sampling_period = 4;
+  // oltp export addr
+  NetworkConfig oltp_exporter_addr = 5;
+  // container collector config
+  ContainerCollectorConfig container_collector_config = 6;
+  // trace server config
+  TraceServerConfig trace_server_config = 7;
+  // host collect config
+  HostCollectConfig host_collect_config = 8;
+  // log level
+  string log_level = 9;
+  // log path
+  string log_file = 10;
+  // Prometheus Exposer
+  string prometheus_exposer_addr = 11;
+  // enable stdout
+  bool close_stdout = 12;
+}

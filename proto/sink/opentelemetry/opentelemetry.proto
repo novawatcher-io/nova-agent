@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package proto.sink.opentelemetry;
+import "proto/sink/opentelemetry/log/grpc/config.proto";
+import "proto/sink/opentelemetry/metric/grpc/config.proto";
+import "proto/sink/opentelemetry/trace/grpc/config.proto";
+
+message OpenTelemetry {
+  proto.sink.opentelemetry.log.grpc.Config log = 1;
+  proto.sink.opentelemetry.metric.grpc.Config metric = 2;
+  proto.sink.opentelemetry.trace.grpc.Config trace = 3;
+}

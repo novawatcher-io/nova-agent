@@ -1,0 +1,29 @@
+{
+  "cluster": "default",
+  "company_uuid": "e902c1e84b9f9b12bdf22936603acfda",
+  "node_report_addr": {
+    "host": "81.71.98.26",
+    "port": 10050
+  },
+  "sampling_period": 2,
+  "oltp_exporter_addr": {
+    "host": "81.71.98.26",
+    "port": 4317
+  },
+  "container_collector_config": {
+    "enable": true,
+    "container_runtime": "containerd",
+    "container_unix_domain_socket": "/var/run/crio/crio.sock"
+  },
+  "trace_server_config": {
+    "enable": false,
+    "address": "0.0.0.0:11800"
+  },
+  "host_collect_config": {
+    "enable": true
+  },
+  "close_stdout": false,
+  "log_level": "debug",
+  "log_file": "stdout",
+  "prometheus_exposer_addr": "0.0.0.0:9000"
+}

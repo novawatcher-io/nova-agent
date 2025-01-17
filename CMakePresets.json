@@ -1,0 +1,45 @@
+{
+  "version": 2,
+  "configurePresets": [
+    {
+      "name": "default",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/debug-build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_MODULE_PATH": "/opt/trace-agent/lib/cmake",
+        "CMAKE_PREFIX_PATH": "/opt/trace-agent",
+        "ENABLE_IWYU": "OFF",
+        "OPENSSL_CRYPTO_LIBRARY": "/opt/trace-agent/lib/libcrypto.a",
+        "OPENSSL_INCLUDE_DIR": "/opt/trace-agent/include",
+        "OPENSSL_ROOT_DIR": "/opt/trace-agent",
+        "OPENSSL_SSL_LIBRARY": "/opt/trace-agent/lib/libssl.a",
+        "SANITIZER_TYPE": "asan",
+        "THIRD_PARTY_INSTALL_DIR": "/opt/trace-agent"
+      }
+    },
+    {
+      "name": "release",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/release-build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_MODULE_PATH": "/opt/trace-agent/lib/cmake",
+        "CMAKE_PREFIX_PATH": "/opt/trace-agent",
+        "ENABLE_IWYU": "OFF",
+        "OPENSSL_CRYPTO_LIBRARY": "/opt/trace-agent/lib/libcrypto.a",
+        "OPENSSL_INCLUDE_DIR": "/opt/trace-agent/include",
+        "OPENSSL_ROOT_DIR": "/opt/trace-agent",
+        "OPENSSL_SSL_LIBRARY": "/opt/trace-agent/lib/libssl.a",
+        "SANITIZER_TYPE": "none",
+        "THIRD_PARTY_INSTALL_DIR": "/opt/trace-agent"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "default",
+      "configurePreset": "default"
+    }
+  ]
+}

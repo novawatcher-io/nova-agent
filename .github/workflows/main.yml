@@ -1,0 +1,98 @@
+name: Build
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+      - dev/ci_with_docker_image
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    container:
+      image: aronic/cppdev:latest
+      options: --user root
+      volumes:
+        - ${{ github.workspace }}:/tmp/trace-agent
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: make artifacts directory
+        run: |
+          mkdir -p /tmp/artifacts
+          cp /usr/lib/x86_64-linux-gnu/libnvidia-ml.so.1 /tmp/artifacts
+      - name: build debug version
+        run: |
+          cd /tmp/trace-agent
+          INSTALL_PREFIX=/opt/trace-agent source ./setup_env.sh
+          cmake -DOPENSSL_ROOT_DIR=/opt/trace-agent \
+                -DOPENSSL_INCLUDE_DIR=/opt/trace-agent/include \
+                -DOPENSSL_CRYPTO_LIBRARY=/opt/trace-agent/lib/libcrypto.a \
+                -DOPENSSL_SSL_LIBRARY=/opt/trace-agent/lib/libssl.a -S . -B /tmp/build-debug
+          cmake --build /tmp/build-debug --target trace-agent
+          cp /tmp/build-debug/trace-agent /tmp/artifacts/trace-agent-dbg
+        shell: bash
+      - name: build release version
+        run: |
+          cd /tmp/trace-agent
+          INSTALL_PREFIX=/opt/trace-agent source ./setup_env.sh
+          cmake -DCMAKE_BUILD_TYPE=Release \
+                -DOPENSSL_ROOT_DIR=/opt/trace-agent \
+                -DOPENSSL_INCLUDE_DIR=/opt/trace-agent/include \
+                -DOPENSSL_CRYPTO_LIBRARY=/opt/trace-agent/lib/libcrypto.a \
+                -DOPENSSL_SSL_LIBRARY=/opt/trace-agent/lib/libssl.a -S . -B /tmp/build-release
+          cmake --build /tmp/build-release --target trace-agent
+          cp /tmp/build-release/trace-agent /tmp/artifacts/trace-agent-rel
+        shell: bash
+      - name: Save build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: trace-agent-binaries
+          path: /tmp/artifacts
+
+  docker:
+    needs: build
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: false
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: trace-agent-binaries
+          path: docker/deploy/
+      - name: prepare dependencies
+        run: |
+          cp config.json docker/deploy/
+          chmod +x docker/deploy/trace-agent-dbg
+          chmod +x docker/deploy/trace-agent-rel
+        shell: bash
+      - name: Build Docker image
+        run: |
+          cd docker/deploy/
+          DEBUG_TAG=aronic/trace-agent:$(date +'%Y%m%d%H%M')dbg
+          echo $DEBUG_TAG > debug-tag.txt
+          cp trace-agent-dbg trace-agent
+          docker build -t $DEBUG_TAG .
+          RELEASE_TAG=aronic/trace-agent:$(date +'%Y%m%d%H%M')rel
+          echo $RELEASE_TAG > release-tag.txt
+          cp -f trace-agent-rel trace-agent
+          docker build -t $RELEASE_TAG .
+        shell: bash
+      - name: Log in to DockerHub
+        run: echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+        shell: bash
+      - name: Push Docker image
+        run: |
+          echo "Pushing debug image: $(cat docker/deploy/debug-tag.txt)"
+          docker push $(cat docker/deploy/debug-tag.txt)
+          echo "Pushing release image: $(cat docker/deploy/release-tag.txt)"
+          docker push $(cat docker/deploy/release-tag.txt)
+        shell: bash

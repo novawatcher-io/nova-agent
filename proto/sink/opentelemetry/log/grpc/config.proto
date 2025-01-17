@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package proto.sink.opentelemetry.log.grpc;
+
+import "proto/common/common.proto";
+
+message Config {
+  bool enabled = 1;
+  proto.common.NetworkConfig host = 2;
+}

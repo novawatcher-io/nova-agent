@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deep-observe-trace-agent
+  namespace: deep-observe
+spec:
+  selector:
+    matchLabels:
+      app: deep-observe-trace-agent
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: deep-observe-trace-agent
+    spec:
+      containers:
+        - name: deep-observe-trace-agent
+          image: zhangleihunter/trace-agent:test0.41
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "256Mi"
+              cpu: "1000m"
+          env:
+            - name: HOST_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: SINK_HOST
+              value: otel-collector.default.svc.cluster.local:4317
+          ports:
+            - name: trace-agent-server
+              containerPort: 11800
+              protocol: TCP
+---
+########################## 端口映射 ######################
+apiVersion: v1
+kind: Service
+metadata:
+  name: deep-observe-trace-agent
+  namespace: deep-observe
+spec:
+  ports:
+    - protocol: TCP
+      port: 11800
+      targetPort: 11800
+  selector:
+    app: deep-observe-trace-agent

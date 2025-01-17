@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package proto.intercept.opentelemetry.metric.skywalking;
+
+message Config {
+  bool enabled = 1;
+}

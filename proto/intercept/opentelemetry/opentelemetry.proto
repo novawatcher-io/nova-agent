@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package proto.intercept.opentelemetry;
+import "proto/intercept/opentelemetry/log/skywalking/config.proto";
+import "proto/intercept/opentelemetry/metric/skywalking/config.proto";
+import "proto/intercept/opentelemetry/trace/skywalking/config.proto";
+message SkyWalking {
+    proto.intercept.opentelemetry.log.skywalking.Config log = 1;
+    proto.intercept.opentelemetry.metric.skywalking.Config metric = 2;
+    proto.intercept.opentelemetry.trace.skywalking.Config trace = 3;
+}
+
+message OpenTelemetry {
+    SkyWalking skyWalking = 1;
+}

@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package proto.source.skywalking;
+import "proto/source/skywalking/grpc/config.proto";
+
+message SkyWalking {
+  proto.source.skywalking.grpc.Config grpc = 1;
+}

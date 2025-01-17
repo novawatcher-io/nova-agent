@@ -1,0 +1,75 @@
+[submodule "third_party/grpc"]
+	path = third_party/grpc
+	url = git@github.com:grpc/grpc.git
+	# Release v1.65.1
+	# https://github.com/grpc/grpc/releases/tag/v1.65.1
+	commit = 4b206a2
+[submodule "third_party/opentelemetry-proto"]
+	path = third_party/opentelemetry-proto
+	url = git@github.com:open-telemetry/opentelemetry-proto.git
+	# v1.3.2
+	# https://github.com/open-telemetry/opentelemetry-proto/releases/tag/v1.3.2
+	commit = 40b3c1b
+[submodule "third_party/skywalking-data-collect-protocol"]
+	path = third_party/skywalking-data-collect-protocol
+	url = git@github.com:apache/skywalking-data-collect-protocol.git
+	# 10.0.0
+	# https://github.com/apache/skywalking-data-collect-protocol/releases/tag/v10.0.0
+	commit = f2f3005
+[submodule "third_party/opentelemetry-cpp"]
+	path = third_party/opentelemetry-cpp
+	url = git@github.com:open-telemetry/opentelemetry-cpp.git
+	# v1.16.1 release
+	# https://github.com/open-telemetry/opentelemetry-cpp/releases/tag/v1.16.1
+	commit = baecbb9
+[submodule "third_party/protobuf"]
+	path = third_party/protobuf
+	url = git@github.com:protocolbuffers/protobuf.git
+	# Protocol Buffers v4.25.1
+	# https://github.com/protocolbuffers/protobuf/releases/tag/v4.25.1
+	commit = 7f94235
+[submodule "third_party/abseil-cpp"]
+	path = third_party/abseil-cpp
+	url = git@github.com:abseil/abseil-cpp.git
+	# Abseil LTS branch, Jan 2024, Patch 2
+	# https://github.com/abseil/abseil-cpp/releases/tag/20240116.2
+	commit = d7aaad8
+[submodule "third_party/stduuid"]
+	path = third_party/stduuid
+	url = git@github.com:mariusbancila/stduuid.git
+	# stduuid v1.2.3
+	# https://github.com/mariusbancila/stduuid/releases/tag/v1.2.3
+	commit = 3afe719
+[submodule "third_party/cpu_features"]
+	path = third_party/cpu_features
+	url = git@github.com:google/cpu_features.git
+	# cpu_features v0.9.0
+	# https://github.com/google/cpu_features/tree/v0.9.0
+	commit = ba4bffa
+[submodule "third_party/deep_agent_payload"]
+	path = third_party/deep_agent_payload
+	url = git@github.com:LeiZhang-Hunter/deep_agent_payload.git
+[submodule "third_party/libproc"]
+	path = third_party/libproc
+	url = git@github.com:rdbo/libproc.git
+[submodule "third_party/googletest"]
+	path = third_party/googletest
+	url = https://github.com/google/googletest.git
+[submodule "third_party/rapidjson"]
+	path = third_party/rapidjson
+	url = https://github.com/Tencent/rapidjson.git
+[submodule "third_party/hwloc"]
+	path = third_party/hwloc
+	url = https://github.com/open-mpi/hwloc.git
+[submodule "third_party/libxml2"]
+	path = third_party/libxml2
+	url = https://github.com/GNOME/libxml2.git
+[submodule "third_party/prometheus-cpp"]
+	path = third_party/prometheus-cpp
+	url = https://github.com/jupp0r/prometheus-cpp.git
+[submodule "third_party/civetweb"]
+	path = third_party/civetweb
+	url = https://github.com/civetweb/civetweb.git
+[submodule "third_party/libcore"]
+	path = third_party/libcore
+	url = git@github.com:novawatcher-io/libcore.git

@@ -1,0 +1,15 @@
+.idea
+cmake-build-debug
+build
+.vscode
+.build/
+
+# temp build files
+third_party/setup_env.sh
+third_party/build_third_party.sh
+third_party/Dockerfile
+
+# build directory
+debug-build
+release-build
+cmake-build-release
