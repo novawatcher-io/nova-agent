@@ -201,7 +201,9 @@ add_subdirectory(app)
 add_subdirectory(tests)
 
 message(STATUS "APP_SRCS:${APP_SRCS}")
-add_executable(${APP_NAME} main.cc ${APP_SRCS})
+add_executable(${APP_NAME} main.cc ${APP_SRCS}
+        app/include/source/http/health_check.h
+        app/include/source/http/source.h)
 
 target_link_libraries(
     ${APP_NAME}

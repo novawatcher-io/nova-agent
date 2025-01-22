@@ -77,6 +77,7 @@ void Source::init() {
         cpu_topo_.GetCPUTopology(*exportInfo.mutable_cpu_topology());
         cgroup_collector_->GetCGroupInfo(*exportInfo.mutable_cgroup_info());
         sink->send(exportInfo);
+        cpu_collector_->Start();
         SPDLOG_INFO("export info: {}", exportInfo.ShortDebugString());
         return;
     });
@@ -136,6 +137,7 @@ void Source::stop() {
     timer_->disable();
     gpu_collector_->Stop();
     oltp_collector_->Stop();
+    cpu_collector_->Stop();
 }
 
 void Source::finish() {

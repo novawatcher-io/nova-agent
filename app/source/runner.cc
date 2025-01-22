@@ -14,6 +14,7 @@
 #include "app/include/sink/channel/grpc_channel.h"
 #include "app/include/source/host/source.h"
 #include "app/include/source/skywalking/grpc/source.h"
+#include "app/include/source/http/source.h"
 #include <component/thread_container.h>
 #include <csignal>
 #include <spdlog/spdlog.h>
@@ -83,6 +84,8 @@ void Runner::run() {
 
     // 注册模块
     initMetricExporter();
+    auto exposer = std::make_unique<App::Prometheus::PrometheusExposer>();
+
 
     if (!config_->GetConfig().IsInitialized()) {
         SPDLOG_ERROR("parse config error!container_collector_config is null");
@@ -93,7 +96,7 @@ void Runner::run() {
         // 调用链stream
         // 启动source
         sourceThread->addInitCallable([&] {
-            auto source = new App::Source::SkyWalking::Grpc::Source(config_);
+            auto source = new App::Source::SkyWalking::Grpc::Source(config_, exposer);
             source->start();
             delete source;
         });
@@ -102,24 +105,28 @@ void Runner::run() {
 
     std::unique_ptr<Source::Host::Source> hostSource;
     auto threadManager = std::make_shared<Core::Component::UnixThreadContainer>();
+    // 初始化线程池
+    for (int i = 0; i < 2; i++) {
+        auto thread = std::make_shared<Core::OS::UnixThread>();
+        threadManager->reg(i, thread);
+    }
 
     if (config_->GetConfig().has_host_collect_config() && config_->GetConfig().host_collect_config().enable()) {
-        // 初始化线程池
-        for (int i = 0; i < 2; i++) {
-            auto thread = std::make_shared<Core::OS::UnixThread>();
-            threadManager->reg(i, thread);
-        }
-        threadManager->start();
-
         hostSource =
             std::make_unique<Source::Host::Source>(loop, threadManager, config_);
-                hostSource->init();
+        hostSource->init();
         hostSource->start();
     }
-    // 启动模块
-    //    manager->init();
-    //    manager->start();
-    //    manager->finish();
+    // 启动http模块
+    auto httpSource =
+            std::make_unique<Source::Http::Source>(loop, threadManager, config_, exposer);
+    // 启动http模块
+    if (config_->GetConfig().has_http_server_config() && config_->GetConfig().http_server_config().enable()) {
+        httpSource->init();
+        httpSource->start();
+    }
+
+    threadManager->start();
     loop->loop();
     SPDLOG_INFO("main loop stopped, start to shutdown...");
 
@@ -137,6 +144,7 @@ void Runner::run() {
             hostSource->finish();
         }
     }
+    httpSource->stop();
     cleanupMetrics();
     SPDLOG_INFO("app stopped");
 }

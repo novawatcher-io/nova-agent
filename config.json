@@ -20,10 +20,13 @@
     "address": "0.0.0.0:11800"
   },
   "host_collect_config": {
-    "enable": true
+    "enable": false
   },
   "close_stdout": false,
   "log_level": "debug",
   "log_file": "stdout",
-  "prometheus_exposer_addr": "0.0.0.0:9000"
+  "http_server_config": {
+    "address": "0.0.0.0",
+    "port": 9000
+  }
 }

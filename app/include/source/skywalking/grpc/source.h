@@ -35,9 +35,9 @@ class GrpcChannel;
 namespace App::Source::SkyWalking::Grpc {
 class Source : public Core::Component::Component {
 public:
-    Source(std::shared_ptr<App::Config::ConfigReader> config) {
+    Source(std::shared_ptr<App::Config::ConfigReader> config, std::unique_ptr<App::Prometheus::PrometheusExposer>& exposer)
+    : exposer_(exposer) {
         channelThread = std::make_shared<App::Common::BaseThread>();
-        exposer_ = std::make_unique<App::Prometheus::PrometheusExposer>(config->GetConfig().prometheus_exposer_addr());
     }
 
     std::string name() override {
@@ -63,7 +63,6 @@ private:
     std::unique_ptr<Core::Component::Pipeline> logPipeline;
     std::unique_ptr<Core::Component::Pipeline> metricPipeline;
     std::unique_ptr<Core::Component::Pipeline> tracePipeline;
-    std::unique_ptr<App::Prometheus::PrometheusExposer> exposer_;
 
     grpc::ServerBuilder builder;
     std::unique_ptr<Callback::ConfigurationDiscoveryServer> configurationDiscoveryService;
@@ -73,5 +72,6 @@ private:
     std::unique_ptr<Callback::ManagementServer> managementService;
     std::unique_ptr<Callback::TraceServer> traceServer;
     std::shared_ptr<App::Common::BaseThread> channelThread;
+    std::unique_ptr<App::Prometheus::PrometheusExposer>& exposer_;
 };
 } // namespace App::Source::SkyWalking::Grpc

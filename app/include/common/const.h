@@ -23,6 +23,12 @@ const static std::string skywalking_grpc = "skywalking-grpc";
 }
 }
 
+namespace Http {
+const static std::string http = "http";
+const static std::string health_path = "/health";
+const static std::string metric_path = "/metrics";
+}
+
 namespace Container {
 const static std::string docker = "docker";
 }
