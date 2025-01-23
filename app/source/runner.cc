@@ -111,12 +111,6 @@ void Runner::run() {
         threadManager->reg(i, thread);
     }
 
-    if (config_->GetConfig().has_host_collect_config() && config_->GetConfig().host_collect_config().enable()) {
-        hostSource =
-            std::make_unique<Source::Host::Source>(loop, threadManager, config_);
-        hostSource->init();
-        hostSource->start();
-    }
     // 启动http模块
     auto httpSource =
             std::make_unique<Source::Http::Source>(loop, threadManager, config_, exposer);
@@ -127,6 +121,16 @@ void Runner::run() {
     }
 
     threadManager->start();
+
+
+    if (config_->GetConfig().has_host_collect_config() && config_->GetConfig().host_collect_config().enable()) {
+        hostSource =
+            std::make_unique<Source::Host::Source>(loop, threadManager, config_);
+        hostSource->init();
+        hostSource->start();
+    }
+
+
     loop->loop();
     SPDLOG_INFO("main loop stopped, start to shutdown...");
 

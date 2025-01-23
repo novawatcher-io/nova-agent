@@ -43,6 +43,6 @@ void CpuUsage::GetCpuUsage(SingleValue& value) {
     }
     last_ = curr;
     value = cpu_usage;
-    SPDLOG_INFO("CPU 使用率: {}", cpu_usage);
+    SPDLOG_DEBUG("CPU 使用率: {}", cpu_usage);
 }
 } // namespace App::Source::Host::Collector::Cpu
