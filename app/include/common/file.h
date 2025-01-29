@@ -32,6 +32,12 @@ struct mount_entry
     unsigned int me_dummy : 1;    /* Nonzero for dummy file systems. */
     unsigned int me_remote : 1;   /* Nonzero for remote file systems. */
     unsigned int me_type_malloced : 1; /* Nonzero if me_type was malloced. */
+    // 大小
+    uint64_t size = 0;
+    // 已用
+    uint64_t used = 0;
+    // 可用
+    uint64_t available = 0;
     std::unique_ptr<mount_entry> me_next;
 };
 

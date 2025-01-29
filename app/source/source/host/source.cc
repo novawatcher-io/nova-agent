@@ -75,8 +75,6 @@ void Source::init() {
         for (auto& iter : collectors) {
             iter->run(&exportInfo);
         }
-        proc_reader_->GetMemoryInfo(exportInfo.mutable_virtual_memory_info());
-        disk_collector_->GetDiskList(&exportInfo);
         cpu_topo_.GetCPUTopology(*exportInfo.mutable_cpu_topology());
         cgroup_collector_->GetCGroupInfo(*exportInfo.mutable_cgroup_info());
         sink->send(exportInfo);
@@ -96,7 +94,11 @@ void Source::init() {
         // todo: report usage info
         threadPool->task(index, [this] {
             novaagent::node::v1::ProcessInfoRequest request;
+            novaagent::node::v1::NodeInfo nodeUsageRequest;
             proc_reader_->GetProcList(&request);
+            disk_collector_->GetDiskList(&nodeUsageRequest);
+            proc_reader_->GetMemoryInfo(nodeUsageRequest.mutable_virtual_memory_info());
+            sink->send(nodeUsageRequest);
             auto now = std::chrono::high_resolution_clock::now();
             auto now_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(now.time_since_epoch()).count();
             request.set_series_id(now_ns);

@@ -2,6 +2,7 @@
 // Created by zhanglei on 25-1-25.
 //
 #include "app/include/common/file.h"
+#include <bits/types.h>
 
 extern "C" {
 #include <sys/vfs.h>
@@ -19,6 +20,16 @@ namespace App::Common {
 #endif
 #undef HAVE_MAJOR
 
+/* Many space usage primitives use all 1 bits to denote a value that is
+   not applicable or unknown.  Propagate this information by returning
+   a uintmax_t value that is all 1 bits if X is all 1 bits, even if X
+   is unsigned and narrower than uintmax_t.  */
+#define PROPAGATE_ALL_ONES(x) \
+((sizeof (x) < sizeof (uintmax_t) \
+&& (~ (x) == (sizeof (x) < sizeof (int) \
+? - (1 << (sizeof (x) * CHAR_BIT)) \
+: 0))) \
+? UINTMAX_MAX : (uintmax_t) (x))
 
 static char *
 terminate_at_blank (char *str)
@@ -189,8 +200,10 @@ struct std::unique_ptr<mount_entry> BasicFileReader::ReadFileSystemList(bool nee
             if (fsd.f_blocks <= 0) {
                 continue;
             }
-
-            std::cout << "dev:" << buf.st_dev << "("  << me->me_dev << ")" << ":" << me->me_devname << ":" << me->me_mountdir << ";root:" << me->me_mntroot << std::endl;
+            __fsword_t block_size = fsd.f_frsize ? PROPAGATE_ALL_ONES(fsd.f_frsize) : PROPAGATE_ALL_ONES(fsd.f_bsize);
+            me->available = fsd.f_ffree * block_size;
+            me->size = fsd.f_files * block_size;
+            me->used = me->size * block_size - me->available * block_size;
             /* Add to the linked list. */
             continue;
         }
