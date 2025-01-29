@@ -14,7 +14,8 @@ namespace App::Source::Host::Collector::Fs {
 
 void FsCollector::run(deepagent::node::v1::NodeInfo* info) {
     Common::BasicFileReader reader;
-    reader.ReadFileSystemList(false);
+    std::unique_ptr<Common::mount_entry> fileSystemList = reader.ReadFileSystemList(false);
+    return;
 }
 
 
