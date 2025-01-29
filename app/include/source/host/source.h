@@ -1,7 +1,7 @@
 #pragma once
 #include "app/include/common/const.h"
 #include "collector/api/collector.h"
-#include "config/trace_agent_config.h"
+#include "config/nova_agent_config.h"
 #include "node/v1/info.pb.h"
 #include "sink/deep_observe/node/sink.h"
 #include "source/host/collector/cgroup/cgroup_collector.h"

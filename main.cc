@@ -1,6 +1,6 @@
 #include "app/include/runner.h"
 #include "common/const.h"
-#include "config/trace_agent_config.h"
+#include "config/nova_agent_config.h"
 #include "spdlog/sinks/basic_file_sink.h"
 #include <absl/flags/flag.h>
 #include <absl/flags/parse.h>

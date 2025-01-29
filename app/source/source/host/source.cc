@@ -4,10 +4,11 @@
 #include "app/include/source/host/collector/cpu/collector.h"
 #include "app/include/source/host/collector/gpu/gpu_collector.h"
 #include "app/include/source/host/collector/node/collector.h"
+#include "app/include/source/host/collector/fs/fs_collector.h"
 #include "component/thread_container.h"
 #include "component/timer_channel.h"
-#include "config/trace_agent_config.h"
-#include "proto/trace_agent_config.pb.h"
+#include "config/nova_agent_config.h"
+#include "proto/nova_agent_config.pb.h"
 #include "sink/deep_observe/node/sink.h"
 #include "source/host/collector/api/collector.h"
 #include <chrono>
@@ -63,8 +64,10 @@ static std::string GetHostname() {
 void Source::init() {
     std::unique_ptr<Collector::Api::Collector> collector = std::make_unique<Collector::Cpu::Collector>();
     std::unique_ptr<Collector::Api::Collector> nodeCollector = std::make_unique<Collector::Node::Collector>();
+    std::unique_ptr<Collector::Api::Collector> fsCollector = std::make_unique<Collector::Fs::FsCollector>();
     collectors.push_back(std::move(collector));
     collectors.push_back(std::move(nodeCollector));
+    collectors.push_back(std::move(fsCollector));
 
     // collect basic info
     int index = static_cast<int>(count % threadPool->getContainer().size());

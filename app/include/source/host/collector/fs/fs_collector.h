@@ -1,0 +1,16 @@
+//
+// Created by zhanglei on 25-1-25.
+//
+#pragma once
+
+#include "app/include/source/host/collector/api/collector.h"
+#include "deep_agent_payload/node/v1/info.grpc.pb.h"
+
+namespace App::Source::Host::Collector::Fs {
+class FsCollector : public Api::Collector {
+public:
+    void run(deepagent::node::v1::NodeInfo* info);
+
+    virtual ~FsCollector() = default;
+};
+}

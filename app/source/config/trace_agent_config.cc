@@ -1,4 +1,4 @@
-#include "config/trace_agent_config.h"
+#include "config/nova_agent_config.h"
 #include "common/file.h"
 #include <google/protobuf/json/json.h>
 #include <google/protobuf/util/json_util.h>

@@ -1,6 +1,6 @@
 #pragma once
 #include "app/include/common/base_thread.h"
-#include "config/trace_agent_config.h"
+#include "config/nova_agent_config.h"
 #include <component/container.h>
 #include <event/event_loop.h>
 #include <event2/util.h>

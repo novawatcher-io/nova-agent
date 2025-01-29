@@ -31,12 +31,12 @@ make
 `module`模式下需要设置一些CMake参数:
 ```shell
 cmake \
-    -Dtrace_agent_ABSL_PROVIDER=module \
-    -Dtrace_agent_PROTOBUF_PROVIDER=module \
-    -Dtrace_agent_GRPC_PROVIDER=module \
-    -Dtrace_agent_OPENTELEMETRY_CPP_PROVIDER=module \
-    -Dtrace_agent_STDUUID_PROVIDER=module \
-    -Dtrace_agent_LIBCORE_PROVIDER=module \
+    -Dnova_agent_ABSL_PROVIDER=module \
+    -Dnova_agent_PROTOBUF_PROVIDER=module \
+    -Dnova_agent_GRPC_PROVIDER=module \
+    -Dnova_agent_OPENTELEMETRY_CPP_PROVIDER=module \
+    -Dnova_agent_STDUUID_PROVIDER=module \
+    -Dnova_agent_LIBCORE_PROVIDER=module \
     -Dlibcore_FMT_PROVIDER=module \
     -Dlibcore_LIBEVENT_PROVIDER=module \
     -DABSL_ENABLE_INSTALL=ON \

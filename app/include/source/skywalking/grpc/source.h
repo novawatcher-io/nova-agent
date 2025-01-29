@@ -22,7 +22,7 @@
 #include <grpcpp/grpcpp.h>
 #include <memory>
 #include <string>
-#include "config/trace_agent_config.h"
+#include "config/nova_agent_config.h"
 
 namespace App {
 namespace Sink {

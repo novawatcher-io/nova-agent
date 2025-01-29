@@ -1,18 +1,18 @@
 set(NODE_PROTO_PATH "${PROJECT_SOURCE_DIR}")
 set(NODE_GENERATED_PROTOBUF_PATH "${CMAKE_BINARY_DIR}/generated/")
 
-add_library(trace_agent_config_proto OBJECT trace_agent_config.proto)
+add_library(nova_agent_config_proto OBJECT nova_agent_config.proto)
 
-target_link_libraries(trace_agent_config_proto PUBLIC protobuf::libprotobuf)
+target_link_libraries(nova_agent_config_proto PUBLIC protobuf::libprotobuf)
 
 set(PROTO_BINARY_DIR "${NODE_GENERATED_PROTOBUF_PATH}")
 set(PROTO_IMPORT_DIRS "${NODE_PROTO_PATH}")
 
-target_include_directories(trace_agent_config_proto PUBLIC "$<BUILD_INTERFACE:${PROTO_BINARY_DIR}>")
+target_include_directories(nova_agent_config_proto PUBLIC "$<BUILD_INTERFACE:${PROTO_BINARY_DIR}>")
 
 protobuf_generate(
         TARGET
-        trace_agent_config_proto
+        nova_agent_config_proto
         OUT_VAR
         PROTO_GENERATED_FILES
         IMPORT_DIRS

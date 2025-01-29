@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package trace_agent.config;
+package nova_agent.config;
 
 message NetworkConfig {
   // 主机支持多个配置

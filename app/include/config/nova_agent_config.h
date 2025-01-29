@@ -1,5 +1,5 @@
 #pragma once
-#include "proto/trace_agent_config.pb.h"
+#include "proto/nova_agent_config.pb.h"
 #include "app/include/common/const.h"
 #include <memory>
 #include <string>
@@ -9,7 +9,7 @@ namespace App::Config {
 class ConfigReader {
 public:
     bool ReadConfigFromFile(const std::string& path);
-    const trace_agent::config::TraceAgentConfig& GetConfig() const {
+    const nova_agent::config::TraceAgentConfig& GetConfig() const {
         return config_;
     }
     std::string NodeReportHost() const;
@@ -30,6 +30,6 @@ public:
     }
 
 private:
-    trace_agent::config::TraceAgentConfig config_;
+    nova_agent::config::TraceAgentConfig config_;
 };
 } // namespace App::Config

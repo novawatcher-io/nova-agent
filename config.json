@@ -11,7 +11,7 @@
     "port": 4317
   },
   "container_collector_config": {
-    "enable": true,
+    "enable": false,
     "container_runtime": "containerd",
     "container_unix_domain_socket": "/var/run/crio/crio.sock"
   },
@@ -20,7 +20,7 @@
     "address": "0.0.0.0:11800"
   },
   "host_collect_config": {
-    "enable": false
+    "enable": true
   },
   "close_stdout": false,
   "log_level": "debug",

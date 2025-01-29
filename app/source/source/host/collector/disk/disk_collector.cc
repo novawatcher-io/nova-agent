@@ -89,14 +89,14 @@ bool DiskCollector::GetDiskList(std::vector<DiskInfo>& disks) {
         if (device.find("/dev/") != 0) {
             continue;
         }
-        if (!IsTargetFs(filesystem)) {
-            SPDLOG_INFO("Skip filesystem: {}", filesystem);
-            continue;
-        }
-        if (!IsPrimaryMount(flags)) {
-            SPDLOG_INFO("not primary mount: {}", filesystem);
-            continue;
-        }
+        // if (!IsTargetFs(filesystem)) {
+        //     SPDLOG_INFO("Skip filesystem: {}", filesystem);
+        //     continue;
+        // }
+        // if (!IsPrimaryMount(flags)) {
+        //     SPDLOG_INFO("not primary mount: {}", filesystem);
+        //     continue;
+        // }
         struct statvfs stat {};
         if (statvfs(mount_point.c_str(), &stat) != 0) {
             SPDLOG_ERROR("statvfs failed, mount point: {}, reason: {}", mount_point.c_str(), strerror(errno));
@@ -110,6 +110,7 @@ bool DiskCollector::GetDiskList(std::vector<DiskInfo>& disks) {
         disk_info.inode_total = stat.f_files;
         disk_info.inode_free = stat.f_ffree;
         GetVendor(device.substr(5), disk_info.vendor);
+
         disks.push_back(disk_info);
     }
     return true;

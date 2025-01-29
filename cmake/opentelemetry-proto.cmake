@@ -110,7 +110,7 @@ message(STATUS "${COMMON_PROTO} ${RESOURCE_PROTO} ${TRACE_PROTO}
         ${LOGS_PROTO} ${METRICS_PROTO} ${TRACE_SERVICE_PROTO} ${LOGS_SERVICE_PROTO}
         ${METRICS_SERVICE_PROTO}")
 
-if(trace_agent_GRPC_PROVIDER STREQUAL "package")
+if(nova_agent_GRPC_PROVIDER STREQUAL "package")
     find_program(gRPC_CPP_PLUGIN_EXECUTABLE grpc_cpp_plugin)
 else()
     if(TARGET gRPC::grpc_cpp_plugin)
@@ -155,7 +155,7 @@ if(NOT EXISTS ${TRACE_SERVICE_GRPC_PB_H_FILE})
     add_custom_command(
             OUTPUT ${PROTOBUF_GENERATED_FILES}
             COMMAND
-            ${_trace_agent_PROTOBUF_PROTOC_EXECUTABLE} ${PROTOBUF_COMMON_FLAGS}
+            ${_nova_agent_PROTOBUF_PROTOC_EXECUTABLE} ${PROTOBUF_COMMON_FLAGS}
             ${PROTOBUF_INCLUDE_FLAGS} ${COMMON_PROTO} ${RESOURCE_PROTO} ${TRACE_PROTO}
             ${LOGS_PROTO} ${METRICS_PROTO} ${TRACE_SERVICE_PROTO} ${LOGS_SERVICE_PROTO}
             ${METRICS_SERVICE_PROTO}
@@ -165,7 +165,7 @@ endif()
 include_directories("${GENERATED_PROTOBUF_PATH}")
 
 add_library(
-        trace_agent_opentelemetry_proto
+        nova_agent_opentelemetry_proto
         ${PROTOBUF_GENERATED_FILES}
 )
 

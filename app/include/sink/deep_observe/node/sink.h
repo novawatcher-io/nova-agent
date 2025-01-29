@@ -5,7 +5,7 @@
 #include "app/include/common/grpc/grpc_client_options.h"
 #include "call_data.h"
 #include "client.h"
-#include "config/trace_agent_config.h"
+#include "config/nova_agent_config.h"
 #include "deep_agent_payload/node/v1/info.grpc.pb.h"
 #include <component/api.h>
 

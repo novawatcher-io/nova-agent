@@ -1,12 +1,16 @@
 #pragma once
 
+extern "C" {
+#include <sys/stat.h>
+#include <unistd.h>
+}
+
 #include <cerrno>
 #include <fstream>
 #include <spdlog/spdlog.h>
 #include <sstream>
 #include <string>
-#include <sys/stat.h>
-#include <unistd.h>
+#include <memory>
 
 namespace App::Common {
 
@@ -14,6 +18,21 @@ struct FileReader {
     virtual bool ReadFile(const std::string& path, std::string* content) = 0;
     virtual bool ReadFileLink(const std::string& path, std::string* content) = 0;
     virtual ~FileReader() = default;
+};
+
+/* A mount table entry. */
+struct mount_entry
+{
+    std::string me_devname;             /* Device node name, including "/dev/". */
+    std::string me_mountdir;            /* Mount point directory name. */
+    std::string me_mntroot;             /* Directory on filesystem of device used */
+    /* as root for the (bind) mount. */
+    std::string me_type;                /* "nfs", "4.2", etc. */
+    dev_t me_dev;                 /* Device number of me_mountdir. */
+    unsigned int me_dummy : 1;    /* Nonzero for dummy file systems. */
+    unsigned int me_remote : 1;   /* Nonzero for remote file systems. */
+    unsigned int me_type_malloced : 1; /* Nonzero if me_type was malloced. */
+    std::unique_ptr<mount_entry> me_next;
 };
 
 struct BasicFileReader : public FileReader {
@@ -57,6 +76,8 @@ struct BasicFileReader : public FileReader {
         }
         return true;
     }
+
+    std::unique_ptr<mount_entry> ReadFileSystemList (bool need_fs_type);
 };
 
 inline static std::string GetFileContent(const std::string& path) {

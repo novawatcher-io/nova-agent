@@ -1,47 +1,47 @@
 cmake_minimum_required(VERSION 3.8..3.28)
 
-project(trace-agent C CXX)
-set(APP_NAME trace-agent)
+project(nova-agent C CXX)
+set(APP_NAME nova-agent)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
 
 # third party dependencies provider; module: build from source code package: find from system
-set(trace_agent_ABSL_PROVIDER
+set(nova_agent_ABSL_PROVIDER
     "package"
     CACHE STRING "Provider of Abseil-cpp library")
-set_property(CACHE trace_agent_ABSL_PROVIDER PROPERTY STRINGS "module" "package")
+set_property(CACHE nova_agent_ABSL_PROVIDER PROPERTY STRINGS "module" "package")
 
-set(trace_agent_PROTOBUF_PROVIDER
+set(nova_agent_PROTOBUF_PROVIDER
     "package"
     CACHE STRING "Provider of Protobuf library")
-set_property(CACHE trace_agent_PROTOBUF_PROVIDER PROPERTY STRINGS "module" "package")
+set_property(CACHE nova_agent_PROTOBUF_PROVIDER PROPERTY STRINGS "module" "package")
 
-set(trace_agent_GRPC_PROVIDER
+set(nova_agent_GRPC_PROVIDER
     "package"
     CACHE STRING "Provider of gRPC library")
-set_property(CACHE trace_agent_GRPC_PROVIDER PROPERTY STRINGS "module" "package")
+set_property(CACHE nova_agent_GRPC_PROVIDER PROPERTY STRINGS "module" "package")
 
-set(trace_agent_OPENTELEMETRY_CPP_PROVIDER
+set(nova_agent_OPENTELEMETRY_CPP_PROVIDER
     "package"
     CACHE STRING "Provider of opentelemetry-cpp library")
-set_property(CACHE trace_agent_OPENTELEMETRY_CPP_PROVIDER PROPERTY STRINGS "module" "package")
+set_property(CACHE nova_agent_OPENTELEMETRY_CPP_PROVIDER PROPERTY STRINGS "module" "package")
 
-set(trace_agent_STDUUID_PROVIDER
+set(nova_agent_STDUUID_PROVIDER
     "package"
     CACHE STRING "Provider of stduuid library")
-set_property(CACHE trace_agent_STDUUID_PROVIDER PROPERTY STRINGS "module" "package")
+set_property(CACHE nova_agent_STDUUID_PROVIDER PROPERTY STRINGS "module" "package")
 
-set(trace_agent_LIBCORE_PROVIDER
+set(nova_agent_LIBCORE_PROVIDER
     "package"
     CACHE STRING "Provider of libcore library")
-set_property(CACHE trace_agent_LIBCORE_PROVIDER PROPERTY STRINGS "module" "package")
+set_property(CACHE nova_agent_LIBCORE_PROVIDER PROPERTY STRINGS "module" "package")
 
-set(trace_agent_CPU_FEATURES_PROVIDER
+set(nova_agent_CPU_FEATURES_PROVIDER
     "package"
     CACHE STRING "Provider of cpu_feature library")
-set_property(CACHE trace_agent_LIBCORE_PROVIDER PROPERTY STRINGS "module" "package")
+set_property(CACHE nova_agent_LIBCORE_PROVIDER PROPERTY STRINGS "module" "package")
 
 set(SANITIZER_TYPE
     "address"
@@ -53,18 +53,18 @@ option(ENABLE_CLANG_TIDY "Enable clang-tidy" OFF)
 
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -g")
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    message("Debug mode")
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-        add_compile_options(-Wall -Wextra -g -O0)
-
-        if(SANITIZER_TYPE STREQUAL "address")
-            add_compile_options(-fsanitize=address)
-            add_link_options(-fsanitize=address)
-        elseif(SANITIZER_TYPE STREQUAL "thread")
-            add_compile_options(-fsanitize=thread -fPIE -pie)
-            add_link_options(-fsanitize=thread)
-        endif()
-    endif()
+#    message("Debug mode")
+#    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+#        add_compile_options(-Wall -Wextra -g -O0)
+#
+#        if(SANITIZER_TYPE STREQUAL "address")
+#            add_compile_options(-fsanitize=address)
+#            add_link_options(-fsanitize=address)
+#        elseif(SANITIZER_TYPE STREQUAL "thread")
+#            add_compile_options(-fsanitize=thread -fPIE -pie)
+#            add_link_options(-fsanitize=thread)
+#        endif()
+#    endif()
 endif()
 
 if(ENABLE_IWYU)
@@ -108,7 +108,7 @@ find_package(RapidJSON REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(HWLOC REQUIRED hwloc)
 
-if(trace_agent_ABSL_PROVIDER STREQUAL "module")
+if(nova_agent_ABSL_PROVIDER STREQUAL "module")
     set(ABSL_PROPAGATE_CXX_STD ON)
     set(ABSL_ENABLE_INSTALL ON)
     add_subdirectory(third_party/abseil-cpp)
@@ -117,7 +117,7 @@ else()
     find_package(absl REQUIRED CONFIG)
 endif()
 
-if(trace_agent_GRPC_PROVIDER STREQUAL "module")
+if(nova_agent_GRPC_PROVIDER STREQUAL "module")
     set(gRPC_BUILD_TESTS OFF)
     set(gRPC_USE_SYSTEMD
         "OFF"
@@ -132,26 +132,26 @@ else()
     find_package(gRPC CONFIG REQUIRED)
 endif()
 
-if(trace_agent_PROTOBUF_PROVIDER STREQUAL "module")
+if(nova_agent_PROTOBUF_PROVIDER STREQUAL "module")
     if(TARGET protobuf::libprotobuf)
         include_directories(${protobuf_SOURCE_DIR}/src)
     else()
         set(protobuf_BUILD_TESTS OFF)
         add_subdirectory(third_party/protobuf)
     endif()
-    set(_trace_agent_PROTOBUF_PROTOC_EXECUTABLE $<TARGET_FILE:protobuf::protoc>)
+    set(_nova_agent_PROTOBUF_PROTOC_EXECUTABLE $<TARGET_FILE:protobuf::protoc>)
 else()
     find_package(Protobuf CONFIG REQUIRED)
     include_directories(${Protobuf_INCLUDE_DIRS})
     find_program(
-        _trace_agent_PROTOBUF_PROTOC_EXECUTABLE protoc
-        HINTS ${_trace_agent_PROTOBUF_PROTOC_EXECUTABLE_PATH}
+        _nova_agent_PROTOBUF_PROTOC_EXECUTABLE protoc
+        HINTS ${_nova_agent_PROTOBUF_PROTOC_EXECUTABLE_PATH}
         PATH_SUFFIXES bin
         DOC "Path to the protoc executable")
-    message(STATUS "protoc:${_trace_agent_PROTOBUF_PROTOC_EXECUTABLE}")
+    message(STATUS "protoc:${_nova_agent_PROTOBUF_PROTOC_EXECUTABLE}")
 endif()
 
-if(trace_agent_CPU_FEATURES_PROVIDER STREQUAL "module")
+if(nova_agent_CPU_FEATURES_PROVIDER STREQUAL "module")
     add_subdirectory(third_party/cpu_features)
     include_directories("third_party/cpu_features/include")
 else()
@@ -166,7 +166,7 @@ include(cmake/skywalking-data-collect-protocol.cmake)
 include(cmake/deep-agent-payload-protocol.cmake)
 include(cmake/cri-api.cmake)
 
-if(trace_agent_OPENTELEMETRY_CPP_PROVIDER STREQUAL "module")
+if(nova_agent_OPENTELEMETRY_CPP_PROVIDER STREQUAL "module")
     set(WITH_HTTP_CLIENT_CURL OFF)
     set(BUILD_TESTING OFF)
     set(WITH_OTLP_GRPC OFF)
@@ -176,13 +176,13 @@ else()
     find_package(opentelemetry-cpp CONFIG REQUIRED)
 endif()
 
-if(trace_agent_STDUUID_PROVIDER STREQUAL "module")
+if(nova_agent_STDUUID_PROVIDER STREQUAL "module")
     add_subdirectory(third_party/stduuid)
 else()
     find_package(stduuid CONFIG REQUIRED)
 endif()
 
-if(trace_agent_LIBCORE_PROVIDER STREQUAL "module")
+if(nova_agent_LIBCORE_PROVIDER STREQUAL "module")
     set(libcore_FMT_PROVIDER "module")
     set(libcore_LIBEVENT_PROVIDER "module")
 endif()
@@ -207,10 +207,10 @@ add_executable(${APP_NAME} main.cc ${APP_SRCS}
 
 target_link_libraries(
     ${APP_NAME}
-    PRIVATE trace_agent_opentelemetry_proto
+    PRIVATE nova_agent_opentelemetry_proto
             skywalking_data_collect_protocol_proto
             node_data_collect_protocol_proto
-            trace_agent_config_proto
+            nova_agent_config_proto
             cri_api_proto
             core
             uuid
@@ -223,7 +223,7 @@ target_link_libraries(
             absl::flags_parse
             CpuFeatures::cpu_features)
 
-if(trace_agent_OPENTELEMETRY_CPP_PROVIDER STREQUAL "module")
+if(nova_agent_OPENTELEMETRY_CPP_PROVIDER STREQUAL "module")
     target_link_libraries(${APP_NAME} PRIVATE opentelemetry_ext opentelemetry_metrics opentelemetry_trace
                                               opentelemetry_resources)
 else()
@@ -240,13 +240,13 @@ else()
                 opentelemetry-cpp::metrics)
 endif()
 
-if(trace_agent_GRPC_PROVIDER STREQUAL "module")
+if(nova_agent_GRPC_PROVIDER STREQUAL "module")
     target_link_libraries(${APP_NAME} PRIVATE grpc++ grpc grpc++_reflection grpc++_unsecure)
 else()
     target_link_libraries(${APP_NAME} PRIVATE gRPC::grpc++ gRPC::grpc gRPC::grpc++_reflection gRPC::grpc++_unsecure)
 endif()
 
-if(trace_agent_ABSL_PROVIDER STREQUAL "module")
+if(nova_agent_ABSL_PROVIDER STREQUAL "module")
     target_link_libraries(${APP_NAME} PRIVATE strings base algorithm hash)
 else()
     target_link_libraries(${APP_NAME} PRIVATE absl::strings absl::base absl::algorithm absl::hash)

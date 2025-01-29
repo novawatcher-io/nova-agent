@@ -8,7 +8,7 @@
 #include <http/http_manager.h>
 #include <memory>
 
-#include "config/trace_agent_config.h"
+#include "config/nova_agent_config.h"
 #include "app/include/prometheus/prometheus_exposer.h"
 
 
