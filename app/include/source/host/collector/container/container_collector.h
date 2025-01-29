@@ -1,7 +1,7 @@
 #pragma once
 #include "app/include/source/host/collector/container/docker_http_client.h"
 #include "app/include/source/host/collector/process/proc_reader.h"
-#include "deep_agent_payload/node/v1/info.pb.h"
+#include "nova_agent_payload/node/v1/info.pb.h"
 #include <cassert>
 #include <chrono>
 #include <component/timer_channel.h>
@@ -13,7 +13,7 @@
 #include <vector>
 
 namespace App::Source::Host::Collector::Container {
-using ::deepagent::node::v1::ContainerInfoRequest;
+using ::novaagent::node::v1::ContainerInfoRequest;
 class ContainerCollector {
 public:
     explicit ContainerCollector(Core::Event::EventLoop* loop, const std::string& unix_socket) {

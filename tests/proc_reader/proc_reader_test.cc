@@ -16,9 +16,9 @@ using App::Source::Host::Collector::Process::ProcessStat;
 using App::Source::Host::Collector::Process::ProcReader;
 using App::Source::Host::Collector::Process::StatInfo;
 using App::Source::Host::Collector::Process::UptimeInfo;
-using ::deepagent::node::v1::ProcessInfo;
-using ::deepagent::node::v1::ProcessInfoRequest;
-using ::deepagent::node::v1::ProcessState;
+using ::novaagent::node::v1::ProcessInfo;
+using ::novaagent::node::v1::ProcessInfoRequest;
+using ::novaagent::node::v1::ProcessState;
 
 struct MockFileReader : public FileReader {
     MOCK_METHOD(bool, ReadFile, (const std::string&, std::string*), (override));
@@ -112,7 +112,7 @@ TEST(TestProcReader, ParseProcessStatus) {
     ProcReader const reader;
     EXPECT_FALSE(reader.ParseProcessStatus(status_content, nullptr));
 
-    ::deepagent::node::v1::ProcessInfo process_info;
+    ::novaagent::node::v1::ProcessInfo process_info;
     EXPECT_TRUE(reader.ParseProcessStatus(status_content, &process_info));
     EXPECT_EQ(process_info.name(), "systemd");
     EXPECT_EQ(process_info.ppid(), 0);
@@ -129,7 +129,7 @@ TEST(TestProcReader, ParseProcessStatus) {
 TEST(TestProcReader, ParseProcessStatm) {
     std::string content = "5914 3547 2363 11 0 1191 0";
     ProcReader reader;
-    ::deepagent::node::v1::ProcessMemoryUsage memory;
+    ::novaagent::node::v1::ProcessMemoryUsage memory;
     EXPECT_TRUE(reader.ParseProcessStatm(content, &memory));
     constexpr int kPageSize = 4096;
     EXPECT_EQ(memory.vm_size(), 5914 * kPageSize);
@@ -152,7 +152,7 @@ TEST(TestProcReader, ParseProcessStat) {
             return true;
         });
     ProcReader reader(&mock_reader);
-    ::deepagent::node::v1::ProcessInfo process;
+    ::novaagent::node::v1::ProcessInfo process;
     ProcessSampleInfo sample_info;
     sample_info.process = &process;
     EXPECT_TRUE(reader.ParseProcessStat(stat_content, sample_info, nullptr));
@@ -413,7 +413,7 @@ TEST(TestProcReader, Sample) {
 
 TEST(TestProcReader, GetMemoryInfo) {
     ProcReader reader;
-    deepagent::node::v1::VirtualMemoryInfo memory;
+    novaagent::node::v1::VirtualMemoryInfo memory;
     reader.GetMemoryInfo(&memory);
     SPDLOG_INFO("machine memory size: {}", memory.ShortDebugString());
 

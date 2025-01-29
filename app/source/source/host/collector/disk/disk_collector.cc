@@ -30,10 +30,10 @@ using App::Source::Host::Collector::Oltp::MetricCollector;
 using App::Source::Host::Collector::Oltp::MetricData;
 using App::Source::Host::Collector::Oltp::MultiValue;
 using App::Source::Host::Collector::Oltp::SingleValue;
-using deepagent::node::v1::DiskType;
+using novaagent::node::v1::DiskType;
 
 namespace App::Source::Host::Collector::Disk {
-void DiskCollector::GetDiskList(deepagent::node::v1::NodeInfo* request) {
+void DiskCollector::GetDiskList(novaagent::node::v1::NodeInfo* request) {
     assert(request);
     std::vector<DiskInfo> disks;
     if (!GetDiskList(disks)) {

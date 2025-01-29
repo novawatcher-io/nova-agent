@@ -12,7 +12,7 @@ namespace App::Source::Host::Collector::Fs {
 
 
 
-void FsCollector::run(deepagent::node::v1::NodeInfo* info) {
+void FsCollector::run(novaagent::node::v1::NodeInfo* info) {
     Common::BasicFileReader reader;
     std::unique_ptr<Common::mount_entry> fileSystemList = reader.ReadFileSystemList(false);
     return;

@@ -75,7 +75,7 @@ private:
     // 创建sink
     std::unique_ptr<Sink::DeepObserve::Node::Sink> sink;
 
-    deepagent::node::v1::NodeInfo exportInfo;
+    novaagent::node::v1::NodeInfo exportInfo;
     std::shared_ptr<App::Config::ConfigReader> config_;
 };
 } // namespace App::Source::Host

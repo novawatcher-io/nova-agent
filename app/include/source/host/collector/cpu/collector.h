@@ -7,13 +7,13 @@
 #include <memory>
 #include <vector>
 
-namespace deepagent {
+namespace novaagent {
 namespace node {
 namespace v1 {
 class NodeInfo;
 }
 } // namespace node
-} // namespace deepagent
+} // namespace novaagent
 
 #if defined(CPU_FEATURES_ARCH_X86)
 #include <cpu_features/cpuinfo_x86.h>
@@ -45,7 +45,7 @@ class Collector : public Api::Collector {
 public:
     Collector();
 
-    void run(deepagent::node::v1::NodeInfo* info) final;
+    void run(novaagent::node::v1::NodeInfo* info) final;
 
     void stop();
 

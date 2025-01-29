@@ -338,7 +338,7 @@ std::string getPlatform() {
     return platform + " " + version;
 }
 
-void Collector::run(deepagent::node::v1::NodeInfo* info) {
+void Collector::run(novaagent::node::v1::NodeInfo* info) {
     // 读取机器id
     info->set_host_object_id(Common::getMachineId());
 

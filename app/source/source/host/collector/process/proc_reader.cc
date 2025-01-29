@@ -22,8 +22,8 @@
 #include <variant>
 #include <vector>
 
-using ::deepagent::node::v1::ProcessInfo;
-using ::deepagent::node::v1::ProcessState;
+using ::novaagent::node::v1::ProcessInfo;
+using ::novaagent::node::v1::ProcessState;
 using director_iterator = std::filesystem::directory_iterator;
 using App::Common::ConvertStr2Number;
 using App::Common::ParseKeyVal;
@@ -60,15 +60,15 @@ std::string GetUsernameFromUID(uid_t uid) {
     return pwd.pw_name;
 }
 
-void ProcReader::GetProcList(deepagent::node::v1::ProcessInfoRequest* request) {
+void ProcReader::GetProcList(novaagent::node::v1::ProcessInfoRequest* request) {
     if (total_memory_ == 0) {
-        deepagent::node::v1::VirtualMemoryInfo memory;
+        novaagent::node::v1::VirtualMemoryInfo memory;
         GetMemoryInfo(&memory);
         total_memory_ = memory.total();
         SPDLOG_INFO("machine memory info: {}", memory.ShortDebugString());
     }
     std::unordered_map<int, ProcessSampleInfo> process_table;
-    deepagent::node::v1::ProcessInfoRequest curr;
+    novaagent::node::v1::ProcessInfoRequest curr;
     std::unordered_map<int, GPUProcessUsage> pid_gpu_usage;
     gpu_reader_.GetGPUProcessMemoryUsage(pid_gpu_usage);
     for (const auto& entry : director_iterator("/proc")) {
@@ -109,7 +109,7 @@ void ProcReader::GetProcList(deepagent::node::v1::ProcessInfoRequest* request) {
 
 bool ProcReader::GetProcDetail(const std::string& path, ProcessSampleInfo& sample_info, ProcessSampleInfo* prev) {
     std::vector<std::tuple<std::string_view, bool,
-                           std::function<bool(std::string_view, ::deepagent::node::v1::ProcessInfo*)>>> const
+                           std::function<bool(std::string_view, ::novaagent::node::v1::ProcessInfo*)>>> const
         parse_list = {
             {"status", false, [](auto content, auto process) { return ParseProcessStatus(content, process); }},
             {"statm", false,
@@ -170,7 +170,7 @@ bool ProcReader::GetProcDetail(const std::string& path, ProcessSampleInfo& sampl
     return true;
 }
 
-bool ProcReader::ParseProcessStatus(std::string_view content, ::deepagent::node::v1::ProcessInfo* process_info) {
+bool ProcReader::ParseProcessStatus(std::string_view content, ::novaagent::node::v1::ProcessInfo* process_info) {
     if (process_info == nullptr) {
         return false;
     }
@@ -219,7 +219,7 @@ bool ProcReader::ParseProcessStatus(std::string_view content, ProcessStatus& res
     return true;
 }
 
-bool ProcReader::ParseProcessStatm(std::string_view content, ::deepagent::node::v1::ProcessMemoryUsage* memory_info) {
+bool ProcReader::ParseProcessStatm(std::string_view content, ::novaagent::node::v1::ProcessMemoryUsage* memory_info) {
     if (memory_info == nullptr) {
         return false;
     }
@@ -491,7 +491,7 @@ bool ProcReader::ParseProcessIO(std::string_view content, ProcessIO& result) {
     return true;
 }
 
-void ProcReader::GetMemoryInfo(deepagent::node::v1::VirtualMemoryInfo* memory_info) {
+void ProcReader::GetMemoryInfo(novaagent::node::v1::VirtualMemoryInfo* memory_info) {
     if (memory_info == nullptr) {
         return;
     }

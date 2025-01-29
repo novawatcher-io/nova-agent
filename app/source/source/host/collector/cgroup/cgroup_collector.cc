@@ -14,18 +14,18 @@
 #include <unordered_map>
 #include <unordered_set>
 
-using deepagent::node::v1::CGroupCPUMax;
-using deepagent::node::v1::CGroupCPUStat;
-using deepagent::node::v1::CGroupInfo;
-using deepagent::node::v1::CGroupIOMax;
-using deepagent::node::v1::CGroupMemoryEvent;
-using deepagent::node::v1::CGroupMemoryStat;
-using deepagent::node::v1::CGroupMemorySwapEvent;
-using deepagent::node::v1::CGroupMount;
-using deepagent::node::v1::CGroupNumaStat;
-using deepagent::node::v1::CGroupStat;
-using deepagent::node::v1::Pressure;
-using deepagent::node::v1::PSI;
+using novaagent::node::v1::CGroupCPUMax;
+using novaagent::node::v1::CGroupCPUStat;
+using novaagent::node::v1::CGroupInfo;
+using novaagent::node::v1::CGroupIOMax;
+using novaagent::node::v1::CGroupMemoryEvent;
+using novaagent::node::v1::CGroupMemoryStat;
+using novaagent::node::v1::CGroupMemorySwapEvent;
+using novaagent::node::v1::CGroupMount;
+using novaagent::node::v1::CGroupNumaStat;
+using novaagent::node::v1::CGroupStat;
+using novaagent::node::v1::Pressure;
+using novaagent::node::v1::PSI;
 
 namespace App::Source::Host::Collector::CGroup {
 std::string GetCgroupVersion() {
@@ -159,7 +159,7 @@ void ParseMemoryStat(const std::string& content, CGroupMemoryStat* stat) {
 
 // 8:16 rbps=2097152 wbps=max riops=max wiops=max
 void ParseIOMax(const std::string& content,
-                ::google::protobuf::RepeatedPtrField<::deepagent::node::v1::CGroupIOMax>* dst) {
+                ::google::protobuf::RepeatedPtrField<::novaagent::node::v1::CGroupIOMax>* dst) {
     if (content.empty()) {
         return;
     }
@@ -424,7 +424,7 @@ void CGroupCollector::handleFile(const std::filesystem::directory_entry& entry, 
     }
 }
 
-void CGroupCollector::GetCGroupInfo(deepagent::node::v1::CGroupInfo& cgroup_info) {
+void CGroupCollector::GetCGroupInfo(novaagent::node::v1::CGroupInfo& cgroup_info) {
     cgroup_info.set_version(GetCgroupVersion());
     std::unordered_map<std::string, CGroupMount*> table;
     auto* root = cgroup_info.mutable_cgroup_mount();
@@ -446,7 +446,7 @@ void CGroupCollector::GetCGroupInfo(deepagent::node::v1::CGroupInfo& cgroup_info
 }
 
 void CGroupCollector::handleHugetlb(const std::string& filename, const std::string& content,
-                                    deepagent::node::v1::CGroupHugeTLBController* hugetlb) {
+                                    novaagent::node::v1::CGroupHugeTLBController* hugetlb) {
     // filename like this:
     // hugetlb.1GB.events
     // hugetlb.2MB.events

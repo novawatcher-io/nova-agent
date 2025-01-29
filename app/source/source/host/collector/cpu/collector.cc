@@ -28,7 +28,7 @@ Collector::Collector() {
     cpuCollectors.push_back((std::make_unique<CpuFeature>()));
 }
 
-void Collector::run(deepagent::node::v1::NodeInfo* info) {
+void Collector::run(novaagent::node::v1::NodeInfo* info) {
     for (auto& collector : cpuCollectors) {
         collector->run(info);
     }

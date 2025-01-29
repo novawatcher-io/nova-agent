@@ -13,11 +13,11 @@
 #include <string>
 #include <utility>
 
-using deepagent::node::v1::ContainerInfoRequest;
-using deepagent::node::v1::NodeInfo;
-using deepagent::node::v1::NodeRes;
-using deepagent::node::v1::NodeUsage;
-using deepagent::node::v1::ProcessInfoRequest;
+using novaagent::node::v1::ContainerInfoRequest;
+using novaagent::node::v1::NodeInfo;
+using novaagent::node::v1::NodeRes;
+using novaagent::node::v1::NodeUsage;
+using novaagent::node::v1::ProcessInfoRequest;
 
 namespace App::Sink::DeepObserve::Node {
 /**
@@ -49,11 +49,11 @@ struct AsyncUnaryCall : public grpc::ClientUnaryReactor {
 
 Client::Client(Common::Grpc::ClientOptions options) : options_(std::move(options)) {
     SPDLOG_INFO("endpoint is: {}", options_.endpoint);
-    stub_ = std::make_unique<deepagent::node::v1::NodeCollectorService::Stub>(
+    stub_ = std::make_unique<novaagent::node::v1::NodeCollectorService::Stub>(
         grpc::CreateChannel(options_.endpoint, grpc::InsecureChannelCredentials()));
 }
 
-void Client::SendRegisterRequest(deepagent::node::v1::NodeInfo& request) {
+void Client::SendRegisterRequest(novaagent::node::v1::NodeInfo& request) {
     auto* call = new AsyncUnaryCall<NodeInfo, NodeRes>(options_.metadata);
     call->callback = [](const grpc::Status& status, const NodeRes& resp) {
         if (!status.ok()) {
@@ -66,7 +66,7 @@ void Client::SendRegisterRequest(deepagent::node::v1::NodeInfo& request) {
     call->StartCall();
 }
 
-void Client::SendUpdateRequest(deepagent::node::v1::NodeUsage& request) {
+void Client::SendUpdateRequest(novaagent::node::v1::NodeUsage& request) {
     auto* call = new AsyncUnaryCall<NodeUsage, NodeRes>(options_.metadata);
     call->callback = [](const grpc::Status& status, const NodeRes& resp) {
         if (!status.ok()) {
@@ -79,7 +79,7 @@ void Client::SendUpdateRequest(deepagent::node::v1::NodeUsage& request) {
     call->StartCall();
 }
 
-void Client::SendReportProcessRequest(deepagent::node::v1::ProcessInfoRequest& request) {
+void Client::SendReportProcessRequest(novaagent::node::v1::ProcessInfoRequest& request) {
     auto* call = new AsyncUnaryCall<ProcessInfoRequest, NodeRes>(options_.metadata);
     call->callback = [](const grpc::Status& status, const NodeRes& resp) {
         if (!status.ok()) {
@@ -92,7 +92,7 @@ void Client::SendReportProcessRequest(deepagent::node::v1::ProcessInfoRequest& r
     call->StartCall();
 }
 
-void Client::SendReportContainerRequest(deepagent::node::v1::ContainerInfoRequest& request) {
+void Client::SendReportContainerRequest(novaagent::node::v1::ContainerInfoRequest& request) {
     auto* call = new AsyncUnaryCall<ContainerInfoRequest, NodeRes>(options_.metadata);
     call->callback = [](const grpc::Status& status, const NodeRes& resp) {
         if (!status.ok()) {

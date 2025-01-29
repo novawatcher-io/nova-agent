@@ -5,7 +5,7 @@
 namespace App::Source::Host::Collector::Cpu {
 class CpuFeature : public Api::Collector {
 public:
-    void run(deepagent::node::v1::NodeInfo* info) final;
+    void run(novaagent::node::v1::NodeInfo* info) final;
     void stop();
 
 private:

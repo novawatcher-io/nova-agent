@@ -1,7 +1,7 @@
 #pragma once
 #include "app/include/source/host/collector/gpu/gpu_reader.h"
 #include "common/file.h"
-#include "deep_agent_payload/node/v1/info.pb.h"
+#include "nova_agent_payload/node/v1/info.pb.h"
 #include <cstdint>
 #include <ctime>
 #include <mutex>
@@ -126,7 +126,7 @@ struct ProcessSampleInfo {
     struct timespec io_sample_ts {};
     struct timespec cpu_sample_ts {};
 
-    ::deepagent::node::v1::ProcessInfo* process = nullptr;
+    ::novaagent::node::v1::ProcessInfo* process = nullptr;
 
     long IODiffInSeconds(const ProcessSampleInfo& other) const {
         return io_sample_ts.tv_sec - other.io_sample_ts.tv_sec;
@@ -148,15 +148,15 @@ public:
     explicit ProcReader(App::Common::FileReader* reader) : reader_(reader) {
     }
 
-    void GetMemoryInfo(deepagent::node::v1::VirtualMemoryInfo* memory_info);
+    void GetMemoryInfo(novaagent::node::v1::VirtualMemoryInfo* memory_info);
     bool ParseProcMemoryInfo(std::string_view content, ProcMemoryInfo& memory_info);
 
     // external API
-    void GetProcList(deepagent::node::v1::ProcessInfoRequest* proc_list);
+    void GetProcList(novaagent::node::v1::ProcessInfoRequest* proc_list);
     bool GetProcDetail(const std::string& content, ProcessSampleInfo& process, ProcessSampleInfo* prev);
 
     // file content: /proc/pid/status
-    static bool ParseProcessStatus(std::string_view content, ::deepagent::node::v1::ProcessInfo* process_info);
+    static bool ParseProcessStatus(std::string_view content, ::novaagent::node::v1::ProcessInfo* process_info);
     static bool ParseProcessStatus(std::string_view content, ProcessStatus& result);
 
     // file content: /proc/pid/stat
@@ -164,7 +164,7 @@ public:
     static bool ParseProcessStat(std::string_view content, ProcessStat& result);
 
     // file content: /proc/pid/statm
-    bool ParseProcessStatm(std::string_view content, ::deepagent::node::v1::ProcessMemoryUsage* memory_info);
+    bool ParseProcessStatm(std::string_view content, ::novaagent::node::v1::ProcessMemoryUsage* memory_info);
     // file content: /proc/pid/cgroup
     static std::string_view ParseProcessCgroup(std::string_view content);
 
@@ -196,7 +196,7 @@ private:
     App::Source::Host::Collector::GPU::GPUReader gpu_reader_;
 
     mutable std::mutex mutex_;
-    deepagent::node::v1::ProcessInfoRequest last_;
+    novaagent::node::v1::ProcessInfoRequest last_;
     std::unordered_map<int, ProcessSampleInfo> process_table_;
     uint64_t total_memory_ = 0;
 

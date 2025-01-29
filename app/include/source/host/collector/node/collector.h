@@ -6,7 +6,7 @@
 namespace App::Source::Host::Collector::Node {
 class Collector : public Api::Collector {
 public:
-    void run(deepagent::node::v1::NodeInfo* info) final;
+    void run(novaagent::node::v1::NodeInfo* info) final;
 
 private:
     Core::OS::IpInfo ip_info_;

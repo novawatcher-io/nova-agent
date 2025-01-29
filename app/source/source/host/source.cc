@@ -23,7 +23,7 @@ class EventLoop;
 namespace grpc {
 class CompletionQueue;
 }
-using ::deepagent::node::v1::ContainerInfoRequest;
+using ::novaagent::node::v1::ContainerInfoRequest;
 
 namespace App::Source::Host {
 Source::Source(const std::shared_ptr<Core::Event::EventLoop>& loop_,
@@ -95,7 +95,7 @@ void Source::init() {
         SPDLOG_INFO("task index: {}; thread size", index, threadPool->size());
         // todo: report usage info
         threadPool->task(index, [this] {
-            deepagent::node::v1::ProcessInfoRequest request;
+            novaagent::node::v1::ProcessInfoRequest request;
             proc_reader_->GetProcList(&request);
             auto now = std::chrono::high_resolution_clock::now();
             auto now_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(now.time_since_epoch()).count();

@@ -38,7 +38,7 @@ namespace App::Source::Host::Collector::Cpu {
 using namespace cpu_features;
 
 #define DEFINE_ADD_FLAGS(HasFeature, FeatureName, FeatureType, LastEnum)                            \
-    static void AddFlags(deepagent::node::v1::CpuFeature* feature, const FeatureType* features) {   \
+    static void AddFlags(novaagent::node::v1::CpuFeature* feature, const FeatureType* features) {   \
         size_t i;                                                                                   \
         const char* ptrs[LastEnum] = {0};                                                           \
         for (i = 0; i < LastEnum; ++i) {                                                            \
@@ -88,10 +88,10 @@ static std::string GetCacheTypeString(CacheType cache_type) {
     CPU_FEATURES_UNREACHABLE();
 }
 
-static void AddCacheInfo(deepagent::node::v1::CpuFeature* feature, const cpu_features::CacheInfo* cache) {
+static void AddCacheInfo(novaagent::node::v1::CpuFeature* feature, const cpu_features::CacheInfo* cache) {
     for (int i = 0; i < cache->size; ++i) {
         CacheLevelInfo info = cache->levels[i];
-        deepagent::node::v1::CpuFeatureCacheKeyValue* data = feature->add_caches();
+        novaagent::node::v1::CpuFeatureCacheKeyValue* data = feature->add_caches();
         ::google::protobuf::Map<std::string, std::string>* cacheMap = data->mutable_values();
         (*cacheMap)[level] = std::to_string(info.level);
         (*cacheMap)[cache_type] = GetCacheTypeString(info.cache_type);
@@ -106,7 +106,7 @@ static void AddCacheInfo(deepagent::node::v1::CpuFeature* feature, const cpu_fea
 // 最后采集时间
 static std::chrono::steady_clock::time_point lastCollectTime = std::chrono::steady_clock::time_point::min();
 
-void CpuFeature::run(deepagent::node::v1::NodeInfo* data) {
+void CpuFeature::run(novaagent::node::v1::NodeInfo* data) {
     if (isRun) {
         return;
     }
@@ -126,7 +126,7 @@ void CpuFeature::run(deepagent::node::v1::NodeInfo* data) {
 #if defined(CPU_FEATURES_ARCH_X86)
     const ::cpu_features::X86Info info = ::cpu_features::GetX86Info();
     const ::cpu_features::CacheInfo cache = ::cpu_features::GetX86CacheInfo();
-    auto feature = new deepagent::node::v1::CpuFeature();
+    auto feature = new novaagent::node::v1::CpuFeature();
     std::string arch_str("x86");
     feature->set_arch(arch_str);
     std::string brand_string(info.brand_string);

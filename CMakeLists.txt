@@ -163,7 +163,7 @@ find_package(GTest CONFIG REQUIRED)
 
 include(cmake/opentelemetry-proto.cmake)
 include(cmake/skywalking-data-collect-protocol.cmake)
-include(cmake/deep-agent-payload-protocol.cmake)
+include(cmake/nova-agent-payload-protocol.cmake)
 include(cmake/cri-api.cmake)
 
 if(nova_agent_OPENTELEMETRY_CPP_PROVIDER STREQUAL "module")

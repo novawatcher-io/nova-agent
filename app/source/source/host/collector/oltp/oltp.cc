@@ -18,7 +18,7 @@ OltpCollector::OltpCollector(Process::ProcReader* reader) : proc_reader_(reader)
 
     misc_metrics_.emplace_back(
         MetricCollector::Create<double>(meter_, company_uuid_, "system_mem_pct_total_used", [&](SingleValue& value) {
-            deepagent::node::v1::VirtualMemoryInfo memory_info;
+            novaagent::node::v1::VirtualMemoryInfo memory_info;
             proc_reader_->GetMemoryInfo(&memory_info);
             if (memory_info.total() > 0) {
                 value = static_cast<double>(memory_info.used()) / memory_info.total();
@@ -27,7 +27,7 @@ OltpCollector::OltpCollector(Process::ProcReader* reader) : proc_reader_(reader)
 
     misc_metrics_.emplace_back(
         MetricCollector::Create<double>(meter_, company_uuid_, "system_mem_pct_usable", [&](SingleValue& values) {
-            deepagent::node::v1::VirtualMemoryInfo memory_info;
+            novaagent::node::v1::VirtualMemoryInfo memory_info;
             proc_reader_->GetMemoryInfo(&memory_info);
             if (memory_info.total() > 0) {
                 values = static_cast<double>(memory_info.free()) / memory_info.total();

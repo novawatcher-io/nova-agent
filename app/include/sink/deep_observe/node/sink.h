@@ -6,7 +6,7 @@
 #include "call_data.h"
 #include "client.h"
 #include "config/nova_agent_config.h"
-#include "deep_agent_payload/node/v1/info.grpc.pb.h"
+#include "nova_agent_payload/node/v1/info.grpc.pb.h"
 #include <component/api.h>
 
 namespace App::Sink::DeepObserve::Node {
@@ -37,9 +37,9 @@ public:
         return {};
     };
 
-    Result send(deepagent::node::v1::NodeInfo& request);
-    void SendUpdate(deepagent::node::v1::ProcessInfoRequest& request);
-    void SendContainerInfo(deepagent::node::v1::ContainerInfoRequest& request);
+    Result send(novaagent::node::v1::NodeInfo& request);
+    void SendUpdate(novaagent::node::v1::ProcessInfoRequest& request);
+    void SendContainerInfo(novaagent::node::v1::ContainerInfoRequest& request);
 
     ~Sink() override = default;
 

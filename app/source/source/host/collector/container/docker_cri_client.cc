@@ -2,7 +2,7 @@
 #include "common/grpc/grpc_client_options.h"
 #include "cri-api/api.grpc.pb.h"
 #include "cri-api/api.pb.h"
-#include "deep_agent_payload/node/v1/info.pb.h"
+#include "nova_agent_payload/node/v1/info.pb.h"
 #include <any>
 #include <cassert>
 #include <component/timer_channel.h>
@@ -16,7 +16,7 @@
 #include <spdlog/spdlog.h>
 #include <string>
 
-using ::deepagent::node::v1::ContainerInfoRequest;
+using ::novaagent::node::v1::ContainerInfoRequest;
 using runtime::v1::Container;
 using runtime::v1::ContainerStatsRequest;
 using runtime::v1::ContainerStatsResponse;
@@ -113,7 +113,7 @@ void DockerCRIClient::AsyncGetContainerList() {
 void DockerCRIClient::OnListContainersResp(const ListContainersResponse& response) {
     for (const auto& container : response.containers()) {
         SPDLOG_DEBUG("container info: {}", container.ShortDebugString());
-        auto* item = new ::deepagent::node::v1::ContainerInfo;
+        auto* item = new ::novaagent::node::v1::ContainerInfo;
         item->set_id(container.id());
         switch (container.state()) {
         case ::runtime::v1::ContainerState::CONTAINER_CREATED:
@@ -136,10 +136,10 @@ void DockerCRIClient::OnListContainersResp(const ListContainersResponse& respons
     }
 }
 
-void DockerCRIClient::AsyncGetContainerInfo(::deepagent::node::v1::ContainerInfo* item) {
+void DockerCRIClient::AsyncGetContainerInfo(::novaagent::node::v1::ContainerInfo* item) {
     auto* call = new AsyncUnaryCall<ContainerStatsRequest, ContainerStatsResponse>(options_.metadata);
     call->callback = [this, call](const grpc::Status& status, const ContainerStatsResponse& resp) {
-        auto info = std::any_cast<::deepagent::node::v1::ContainerInfo*>(call->private_data);
+        auto info = std::any_cast<::novaagent::node::v1::ContainerInfo*>(call->private_data);
         if (status.ok()) {
             if (info != nullptr) {
                 SPDLOG_DEBUG("ContainerStats response: {}", resp.ShortDebugString());
@@ -157,7 +157,7 @@ void DockerCRIClient::AsyncGetContainerInfo(::deepagent::node::v1::ContainerInfo
     call->StartCall();
 }
 
-void DockerCRIClient::OnContainerInfoResp(::deepagent::node::v1::ContainerInfo* item,
+void DockerCRIClient::OnContainerInfoResp(::novaagent::node::v1::ContainerInfo* item,
                                           const runtime::v1::ContainerStatsResponse& resp) {
     item->set_memory_rss(resp.stats().memory().rss_bytes().value());
     item->set_memory_limit(resp.stats().memory().working_set_bytes().value());

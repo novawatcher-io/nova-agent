@@ -1,10 +1,10 @@
 #include "app/include/source/host/collector/container/container_collector.h"
-#include "deep_agent_payload/node/v1/info.pb.h"
+#include "nova_agent_payload/node/v1/info.pb.h"
 #include <cassert>
 #include <spdlog/spdlog.h>
 
-using ::deepagent::node::v1::ContainerInfo;
-using ::deepagent::node::v1::ContainerInfoRequest;
+using ::novaagent::node::v1::ContainerInfo;
+using ::novaagent::node::v1::ContainerInfoRequest;
 
 namespace App::Source::Host::Collector::Container {
 

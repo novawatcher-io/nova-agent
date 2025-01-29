@@ -1,6 +1,6 @@
 #pragma once
 #include "app/include/source/host/collector/oltp/oltp_metric.h"
-#include "deep_agent_payload/node/v1/info.pb.h"
+#include "nova_agent_payload/node/v1/info.pb.h"
 #include <common/file.h>
 #include <cstdint>
 #include <map>
@@ -36,13 +36,13 @@ class DiskCollector {
 public:
     DiskCollector(const std::string& company_uuid);
 
-    void GetDiskList(deepagent::node::v1::NodeInfo* request);
+    void GetDiskList(novaagent::node::v1::NodeInfo* request);
     bool GetDiskList(std::vector<DiskInfo>& disks);
     bool GetVendor(std::string_view device_name, std::string& vendor);
 
     static bool IsTargetFs(std::string_view fs);
     static bool IsPrimaryMount(std::string_view flags);
-    deepagent::node::v1::DiskType GetDiskType(std::string_view device_name);
+    novaagent::node::v1::DiskType GetDiskType(std::string_view device_name);
 
     void GetDiskReadTime(Oltp::MultiValue& values);
     void GetDiskWriteTime(Oltp::MultiValue& values);
