@@ -73,6 +73,10 @@ bool me_dummy(const char* Fs_name, const char* Fs_type) {
    || strcmp (Fs_type, "mqueue") == 0
    || strcmp (Fs_type, "rpc_pipefs") == 0
    || strcmp (Fs_type, "sysfs") == 0
+   || strcmp (Fs_type, "squashfs") == 0
+   || strcmp (Fs_type, "nsfs") == 0
+   || strcmp (Fs_type, "cgroup") == 0
+   || strcmp (Fs_type, "devtmpfs") == 0
    /* FreeBSD, Linux 2.4 */
    || strcmp (Fs_type, "devfs") == 0
    /* for NetBSD 3.0 */
@@ -169,6 +173,24 @@ struct std::unique_ptr<mount_entry> BasicFileReader::ReadFileSystemList(bool nee
                 continue;
             }
 
+
+
+            struct statfs fsd;
+            if (statfs (target, &fsd) != 0)
+                continue;
+
+            if (fsd.f_blocks <= 0) {
+                continue;
+            }
+
+            struct stat buf;
+            int ret = stat(target, &buf);
+            if (ret == -1) {
+                std::cout << ret << std::endl;
+                continue;
+            }
+
+
              if (head == nullptr) {
                  head = std::make_unique<mount_entry>();
                  me = head.get();
@@ -178,32 +200,22 @@ struct std::unique_ptr<mount_entry> BasicFileReader::ReadFileSystemList(bool nee
             }
 
             me->me_devname =  (source);
-            me->me_mountdir =  (target);
             me->me_mntroot =  (mntroot);
             me->me_type =  (fstype);
+            me->me_mountdir =  (target);
             me->me_type_malloced = 1;
             me->me_dev = makedev (devmaj, devmin);
             me->me_remote =  me_remote(me->me_devname.c_str(), me->me_type.c_str());
             me->me_dummy = me_dummy(me->me_devname.c_str(), me->me_type.c_str());
 
-            struct stat buf;
-            int ret = stat(me->me_mountdir.c_str(), &buf);
-            if (ret == -1) {
-                std::cout << ret << std::endl;
-                continue;
-            }
-
-            struct statfs fsd;
-            if (statfs (me->me_mountdir.c_str(), &fsd) != 0)
-                continue;
-
-            if (fsd.f_blocks <= 0) {
-                continue;
-            }
             __fsword_t block_size = fsd.f_frsize ? PROPAGATE_ALL_ONES(fsd.f_frsize) : PROPAGATE_ALL_ONES(fsd.f_bsize);
             me->available = fsd.f_ffree * block_size;
             me->size = fsd.f_files * block_size;
-            me->used = me->size * block_size - me->available * block_size;
+            if (me->size * block_size > me->available * block_size) {
+                me->used = me->size * block_size - me->available * block_size;
+            } else {
+                me->used = 0;
+            }
             /* Add to the linked list. */
             continue;
         }

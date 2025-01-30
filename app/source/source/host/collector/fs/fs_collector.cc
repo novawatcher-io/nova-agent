@@ -24,9 +24,12 @@ void FsCollector::run(novaagent::node::v1::NodeInfo* info) {
         file_system->set_name(entry->me_devname);
         file_system->set_type(entry->me_type);
         file_system->set_monit_point(entry->me_mountdir);
-        entry = fileSystemList->me_next.get();
+        entry = entry->me_next.get();
+        if (!entry) {
+            break;
+        }
+        continue;
     }
-    auto file_systems = info->add_file_system_infos();
     return;
 }
 

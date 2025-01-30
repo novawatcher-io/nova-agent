@@ -338,22 +338,29 @@ std::string getPlatform() {
     return platform + " " + version;
 }
 
-void Collector::run(novaagent::node::v1::NodeInfo* info) {
-    // 读取机器id
-    info->set_host_object_id(Common::getMachineId());
-
+Collector::Collector(): host_object_id_(Common::getMachineId()) {
     // 读取操node name
     utsname uts;
     uname(&uts);
-    std::string hostname(uts.nodename);
+    host_name_ = uts.nodename;
+    version_ = uts.version;
+    sysname_ = uts.sysname;
+}
+
+void Collector::run(novaagent::node::v1::NodeInfo* info) {
+    // 读取机器id
+    info->set_host_object_id(host_object_id_);
+
+    // 读取操node name
+    std::string hostname(host_name_);
     info->set_host_name(hostname);
 
     // 读取操作系统 systemos
-    std::string sysname(uts.sysname);
-    info->set_system_os(sysname);
+    std::string sysname(sysname_);
+    info->set_system_os(sysname_);
 
     // 读取操作系统 版本
-    std::string version(uts.version);
+    std::string version(version_);
     info->set_system_version(sysname);
 
     // 读取操作系统类型，看是物理机还是虚拟机

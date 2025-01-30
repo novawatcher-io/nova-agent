@@ -49,8 +49,11 @@ Source::Source(const std::shared_ptr<Core::Event::EventLoop>& loop_,
     disk_collector_ = std::make_unique<Collector::Disk::DiskCollector>(config_->GetConfig().company_uuid());
     oltp_collector_ = std::make_unique<App::Source::Host::Collector::Oltp::OltpCollector>(proc_reader_.get());
     cpu_collector_ = std::make_unique<App::Source::Host::Collector::Cpu::CpuUsage>(config_->GetConfig().company_uuid(),
-                                                                                   proc_reader_.get());
+                                                                          proc_reader_.get());
+    fs_collector_ = std::make_unique<Collector::Fs::FsCollector>();
     cgroup_collector_ = std::make_unique<Collector::CGroup::CGroupCollector>();
+    node_collector_ = std::make_unique<Collector::Node::Collector>();
+    node_collector_ptr_ = node_collector_.get();
 }
 
 static std::string GetHostname() {
@@ -63,11 +66,8 @@ static std::string GetHostname() {
 
 void Source::init() {
     std::unique_ptr<Collector::Api::Collector> collector = std::make_unique<Collector::Cpu::Collector>();
-    std::unique_ptr<Collector::Api::Collector> nodeCollector = std::make_unique<Collector::Node::Collector>();
-    std::unique_ptr<Collector::Api::Collector> fsCollector = std::make_unique<Collector::Fs::FsCollector>();
     collectors.push_back(std::move(collector));
-    collectors.push_back(std::move(nodeCollector));
-    collectors.push_back(std::move(fsCollector));
+    collectors.push_back(std::move(node_collector_));
 
     // collect basic info
     int index = static_cast<int>(count % threadPool->getContainer().size());
@@ -79,7 +79,6 @@ void Source::init() {
         cgroup_collector_->GetCGroupInfo(*exportInfo.mutable_cgroup_info());
         sink->send(exportInfo);
         cpu_collector_->Start();
-        SPDLOG_INFO("export info: {}", exportInfo.ShortDebugString());
         return;
     });
 
@@ -90,14 +89,18 @@ void Source::init() {
         }
 
         int index = static_cast<int>(count % threadPool->getContainer().size());
-        SPDLOG_INFO("task index: {}; thread size", index, threadPool->size());
         // todo: report usage info
         threadPool->task(index, [this] {
             novaagent::node::v1::ProcessInfoRequest request;
             novaagent::node::v1::NodeInfo nodeUsageRequest;
+            nodeUsageRequest.set_company_uuid(config_->GetConfig().company_uuid());
+            nodeUsageRequest.set_cluster(config_->GetConfig().cluster());
+            nodeUsageRequest.set_host_name(node_collector_ptr_->host_name_);
+            nodeUsageRequest.set_host_object_id(node_collector_ptr_->host_object_id_);
             proc_reader_->GetProcList(&request);
             disk_collector_->GetDiskList(&nodeUsageRequest);
             proc_reader_->GetMemoryInfo(nodeUsageRequest.mutable_virtual_memory_info());
+            fs_collector_->run(&nodeUsageRequest);
             sink->send(nodeUsageRequest);
             auto now = std::chrono::high_resolution_clock::now();
             auto now_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(now.time_since_epoch()).count();
@@ -128,13 +131,17 @@ void Source::init() {
                     sink->SendContainerInfo(k8s_request);
                 }
             }
+            std::cout << nodeUsageRequest.DebugString() << std::endl;
+            std::cout << exportInfo.DebugString() << std::endl;
+            timer_->enable(std::chrono::seconds(10));
         });
     });
-    gpu_collector_->Start();
-    oltp_collector_->Start();
+
 }
 
 void Source::start() {
+    gpu_collector_->Start();
+    oltp_collector_->Start();
     timer_->enable(std::chrono::seconds(10));
 }
 

@@ -1,6 +1,7 @@
 #pragma once
 #include "app/include/common/const.h"
 #include "collector/api/collector.h"
+#include "collector/node/collector.h"
 #include "config/nova_agent_config.h"
 #include "node/v1/info.pb.h"
 #include "sink/deep_observe/node/sink.h"
@@ -10,6 +11,7 @@
 #include "source/host/collector/cpu/cpu_topology.h"
 #include "source/host/collector/cpu/cpu_usage.h"
 #include "source/host/collector/disk/disk_collector.h"
+#include "source/host/collector/fs/fs_collector.h"
 #include "source/host/collector/gpu/gpu_collector.h"
 #include "source/host/collector/oltp/oltp.h"
 #include "source/host/collector/process/proc_reader.h"
@@ -69,7 +71,10 @@ private:
     std::unique_ptr<App::Source::Host::Collector::Container::ContainerCollector> container_collector_;
     std::unique_ptr<App::Source::Host::Collector::Container::DockerCRIClient> cri_collector_;
     std::unique_ptr<App::Source::Host::Collector::Disk::DiskCollector> disk_collector_;
+    std::unique_ptr<App::Source::Host::Collector::Fs::FsCollector> fs_collector_;
     std::unique_ptr<App::Source::Host::Collector::CGroup::CGroupCollector> cgroup_collector_;
+    std::unique_ptr<App::Source::Host::Collector::Node::Collector> node_collector_;
+    App::Source::Host::Collector::Node::Collector* node_collector_ptr_;
     std::vector<std::unique_ptr<Collector::Api::Collector>> collectors;
 
     // 创建sink
