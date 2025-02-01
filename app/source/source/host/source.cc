@@ -131,8 +131,6 @@ void Source::init() {
                     sink->SendContainerInfo(k8s_request);
                 }
             }
-            std::cout << nodeUsageRequest.DebugString() << std::endl;
-            std::cout << exportInfo.DebugString() << std::endl;
             timer_->enable(std::chrono::seconds(10));
         });
     });

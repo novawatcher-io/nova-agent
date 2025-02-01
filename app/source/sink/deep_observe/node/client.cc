@@ -61,7 +61,7 @@ void Client::SendRegisterRequest(novaagent::node::v1::NodeInfo& request) {
         }
     };
     call->request.Swap(&request);
-    SPDLOG_INFO("Register request: {}", call->request.ShortDebugString());
+    SPDLOG_DEBUG("Register request: {}", call->request.ShortDebugString());
     stub_->async()->Register(&call->context, &call->request, &call->response, call);
     call->StartCall();
 }
