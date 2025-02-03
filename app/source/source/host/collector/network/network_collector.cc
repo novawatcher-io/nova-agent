@@ -6,6 +6,6 @@
 namespace App::Source::Host::Collector::Network {
 
 void NetworkCollector::run(novaagent::node::v1::NodeInfo* info) {
-
+    interface_->all();
 }
 }

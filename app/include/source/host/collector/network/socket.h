@@ -8,5 +8,7 @@ namespace App::Source::Host::Collector::Network {
 class Socket {
 public:
     int open(int family);
+
+    int af(int af);
 };
 }

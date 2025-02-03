@@ -21,9 +21,9 @@ extern "C" {
 #include <unistd.h>
 }
 #include "app/include/common/util.h"
+extern int h_errno;		/* some netdb.h versions don't export this */
 
 namespace App::Source::Host::Collector::Network {
-extern int h_errno;		/* some netdb.h versions don't export this */
 
 char * fix_v4_address(char *buf, struct in6_addr *in6)
 {

@@ -27,6 +27,7 @@ namespace App::Source::Host::Collector::Network {
 
 
 extern struct aftype inet6_aftype;
+static short sVafinit = 0;
 
 struct aftype unspec_aftype =
 {
@@ -43,4 +44,13 @@ struct aftype *aftypes[] =
     &unspec_aftype,
     NULL
 };
+
+void afinit()
+{
+    unspec_aftype.title = "UNSPEC";
+    unix_aftype.title = "UNIX Domain";
+    inet_aftype.title = "DARPA Internet";
+    inet6_aftype.title = "IPv6";
+    sVafinit = 1;
+}
 }

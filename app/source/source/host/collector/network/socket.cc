@@ -57,4 +57,19 @@ int Socket::open(int family) {
         fprintf(stderr, "No usable address families found.\n");
     return sfd;
 }
+
+int Socket::af(int af) {
+    struct aftype **afp;
+
+    if (!sVafinit)
+        afinit();
+
+    afp = aftypes;
+    while (*afp != NULL) {
+        if ((*afp)->af == af)
+            return (*afp)->fd;
+        afp++;
+    }
+    return -1;
+}
 }

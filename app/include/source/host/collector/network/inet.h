@@ -20,10 +20,9 @@ extern "C" {
 #include <unistd.h>
 }
 #include "app/include/common/util.h"
-
-namespace App::Source::Host::Collector::Network {
 extern int h_errno;		/* some netdb.h versions don't export this */
 
+namespace App::Source::Host::Collector::Network {
 /* cache */
 struct addr {
     struct sockaddr_in addr_;

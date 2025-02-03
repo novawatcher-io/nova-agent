@@ -6,7 +6,11 @@
 
 extern "C" {
 #include <string.h>
+#include <stdlib.h>
 }
+
+#include <spdlog/spdlog.h>
+
 
 namespace App::Common {
 #define KRELEASE(maj,min,patch) ((maj) * 10000 + (min)*1000 + (patch))
@@ -19,6 +23,30 @@ static char *safe_strncpy(char *dst, const char *src, size_t size)
   return strncpy(dst,src,size-1);
 }
 
+static void oom(void)
+{
+  SPDLOG_ERROR("out of virtual memory\n");
+  exit(2);
+}
 
+
+static void *xmalloc(size_t sz)
+{
+  void *p = calloc(sz, 1);
+  if (!p)
+    oom();
+  return p;
+}
+
+static void *xrealloc(void *oldp, size_t sz)
+{
+  void *p = realloc(oldp, sz);
+  if (!p)
+    oom();
+  return p;
+}
+
+/* like strcmp(), but knows about numbers and ':' alias suffix */
+int nstrcmp(const char *ap, const char *bp);
 
 }
