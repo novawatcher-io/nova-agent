@@ -19,5 +19,6 @@ public:
 private:
     std::unique_ptr<NetworkInterface> interface_;
     std::unique_ptr<Socket> socket_;
+    int opt_a = 1;
 };
 }

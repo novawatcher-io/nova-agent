@@ -37,9 +37,6 @@ static int skfd = -1;
 
 static int usage(void)
 {
-    fprintf(stderr, "Usage: inet6_route [-vF] del Target\n");
-    fprintf(stderr, "       inet6_route [-vF] add Target [gw Gw] [metric M] [[dev] If]\n");
-    fprintf(stderr, "       inet6_route [-FC] flush      NOT supported\n");
     return (E_USAGE);
 }
 
@@ -179,7 +176,7 @@ static int INET6_setroute(int action, int options, char **args)
 int INET6_rinput(int action, int options, char **args)
 {
     if (action == RTACTION_FLUSH) {
-	fprintf(stderr, "Flushing `inet6' routing table not supported\n");
+	SPDLOG_ERROR("Flushing `inet6' routing table not supported\n");
 	return (usage());
     }
     if ((*args == NULL) || (action == RTACTION_HELP))

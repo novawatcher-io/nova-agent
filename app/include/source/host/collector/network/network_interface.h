@@ -88,9 +88,12 @@ public:
 
     int read();
 
-    int all(int (*doit) (struct interface *, void *), void *cookie);
+    int collect(int (*doit) (struct interface *, void *, void *), void *cookie, void *ptr);
+
+    int fetch(struct interface *ife);
 
 private:
+    int if_fetch(struct interface *ife);
 
     int procnetdevVersion(char *buf)
     {
@@ -109,7 +112,9 @@ private:
 
     int procnetdevVsn = 1;
 
-    struct interface *int_list, *int_last;
+    int skfd = -1;
+
+    struct interface *int_list = nullptr, *int_last = nullptr;
 
     std::unique_ptr<Socket> &socket_;
 

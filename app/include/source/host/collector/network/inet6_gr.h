@@ -62,16 +62,16 @@ int rprint_fib6(int ext, int numeric)
 
     if (!fp) {
 	perror(_PATH_PROCNET_ROUTE6);
-        printf("INET6 (IPv6) not configured in this system.\n");
+        SPDLOG_ERROR("INET6 (IPv6) not configured in this system.");
 	return 1;
     }
 
     if (numeric & RTF_CACHE)
-    	printf("Kernel IPv6 routing cache\n");
+    	SPDLOG_DEBUG("Kernel IPv6 routing cache\n");
     else
-    	printf("Kernel IPv6 routing table\n");
+    	SPDLOG_DEBUG("Kernel IPv6 routing table\n");
 
-    printf("Destination                    "
+    SPDLOG_DEBUG("Destination                    "
 	     "Next Hop                   "
 	     "Flag Met Ref Use If\n");
 
@@ -144,7 +144,7 @@ int rprint_fib6(int ext, int numeric)
 	    strcat(flags, "f");
 
 	/* Print the info. */
-	printf("%-30s %-26s %-4s %-3d %-1d%6d %s\n",
+	SPDLOG_DEBUG("{}-30s {}-26s {}-4s {}-3d {}-1d{} %s\n",
 	       addr6, naddr6, flags, metric, refcnt, use, iface);
     }
 
@@ -165,14 +165,14 @@ int rprint_cache6(int ext, int numeric)
     if (!fp) {
 	return rprint_fib6(ext, numeric | RTF_CACHE);
     }
-    printf("Kernel IPv6 Neighbour Cache\n");
+    SPDLOG_DEBUG("Kernel IPv6 Neighbour Cache\n");
 
     if (ext == 2)
-	printf("Neighbour                                   "
+	SPDLOG_DEBUG("Neighbour                                   "
 		 "HW Address        "
 		 "Iface    Flags Ref State\n");
     else
-	printf("Neighbour                                   "
+	SPDLOG_DEBUG("Neighbour                                   "
 		 "HW Address        "
 	"Iface    Flags Ref State            Stale(sec) Delete(sec)\n");
 
@@ -244,7 +244,7 @@ int rprint_cache6(int ext, int numeric)
 	}
 
 	/* Print the info. */
-	printf("%-43s %-17s %-8s %-5s %-3d %-16s",
+	SPDLOG_ERROR("{}-43s {}-17s {}-8s {}-5s {}-3d {}-16s",
 	       addr6, haddr, iface, flags, refcnt, statestr);
 
 	stale = 0;
@@ -252,13 +252,12 @@ int rprint_cache6(int ext, int numeric)
 	    stale = reachable > tstamp ? reachable - tstamp : 0;
 	delete1 = gc > tstamp ? gc - tstamp : 0;
 	if (ext != 2) {
-	    printf(" %-9ld ", stale / HZ);
+	    SPDLOG_DEBUG(" {}-9ld ", stale / HZ);
 	    if (refcnt)
-		printf(" * ");
+		SPDLOG_DEBUG(" * ");
 	    else
-		printf(" %-7ld ", delete1 / HZ);
+		SPDLOG_DEBUG("{}-7ld ", delete1 / HZ);
 	}
-	printf("\n");
     }
 
     (void) fclose(fp);

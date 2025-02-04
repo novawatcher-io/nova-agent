@@ -48,7 +48,7 @@ static int INET6_resolve(char *name, struct sockaddr_in6 *sin6)
     memset (&req, '\0', sizeof req);
     req.ai_family = AF_INET6;
     if ((s = getaddrinfo(name, NULL, &req, &ai))) {
-	fprintf(stderr, "getaddrinfo: %s: %d\n", name, s);
+	SPDLOG_ERROR("getaddrinfo: {}: {}\n", name, s);
 	return -1;
     }
     memcpy(sin6, ai->ai_addr, sizeof(struct sockaddr_in6));
@@ -71,10 +71,6 @@ static int INET6_rresolve(char *name, struct sockaddr_in6 *sin6, int numeric)
 
     /* Grmpf. -FvK */
     if (sin6->sin6_family != AF_INET6) {
-#ifdef DEBUG
-	fprintf(stderr, _("rresolve: unsupport address family %d !\n"),
-		sin6->sin6_family);
-#endif
 	errno = EAFNOSUPPORT;
 	return (-1);
     }

@@ -61,9 +61,7 @@ static int INET_resolve(char *name, struct sockaddr_in *sin, int hostfirst)
 	return 0;
     }
     /* If we expect this to be a hostname, try hostname database first */
-#ifdef DEBUG
-    if (hostfirst) fprintf (stderr, "gethostbyname (%s)\n", name);
-#endif
+
     if (hostfirst &&
 	(hp = gethostbyname(name)) != (struct hostent *) NULL) {
 	memcpy((char *) &sin->sin_addr, (char *) hp->h_addr_list[0],
@@ -71,9 +69,7 @@ static int INET_resolve(char *name, struct sockaddr_in *sin, int hostfirst)
 	return 0;
     }
     /* Try the NETWORKS database to see if this is a known network. */
-#ifdef DEBUG
-    fprintf (stderr, "getnetbyname (%s)\n", name);
-#endif
+
     if ((np = getnetbyname(name)) != (struct netent *) NULL) {
 	sin->sin_addr.s_addr = htonl(np->n_net);
 	return 1;
@@ -83,14 +79,7 @@ static int INET_resolve(char *name, struct sockaddr_in *sin, int hostfirst)
 	errno = h_errno;
 	return -1;
     }
-#ifdef DEBUG
-    res_init();
-    _res.options |= RES_DEBUG;
-#endif
 
-#ifdef DEBUG
-    fprintf (stderr, "gethostbyname (%s)\n", name);
-#endif
     if ((hp = gethostbyname(name)) == (struct hostent *) NULL) {
 	errno = h_errno;
 	return -1;
@@ -117,16 +106,12 @@ static int INET_rresolve(char *name, size_t len, struct sockaddr_in *sin,
 
     /* Grmpf. -FvK */
     if (sin->sin_family != AF_INET) {
-#ifdef DEBUG
-	fprintf(stderr, _("rresolve: unsupport address family %d !\n"), sin->sin_family);
-#endif
+
 	errno = EAFNOSUPPORT;
 	return (-1);
     }
     ad = sin->sin_addr.s_addr;
-#ifdef DEBUG
-    fprintf (stderr, "rresolve: %08lx, mask %08x, num %08x \n", ad, netmask, numeric);
-#endif
+
     if (ad == INADDR_ANY) {
 	if ((numeric & 0x0FFF) == 0) {
 	    if (numeric & 0x8000)
@@ -150,9 +135,7 @@ static int INET_rresolve(char *name, size_t len, struct sockaddr_in *sin,
     while (pn != NULL) {
 	if (pn->addr_.sin_addr.s_addr == ad && pn->host == host) {
 	    Common::safe_strncpy(name, pn->name, len);
-#ifdef DEBUG
-	    fprintf (stderr, "rresolve: found %s %08lx in cache\n", (host? "host": "net"), ad);
-#endif
+
 	    return (0);
 	}
 	pn = pn->next;
@@ -162,16 +145,12 @@ static int INET_rresolve(char *name, size_t len, struct sockaddr_in *sin,
     np = NULL;
     ent = NULL;
     if (host) {
-#ifdef DEBUG
-	fprintf (stderr, "gethostbyaddr (%08lx)\n", ad);
-#endif
+
 	ent = gethostbyaddr((char *) &ad, 4, AF_INET);
 	if (ent != NULL)
 	    Common::safe_strncpy(name, ent->h_name, len);
     } else {
-#ifdef DEBUG
-	fprintf (stderr, "getnetbyaddr (%08lx)\n", host_ad);
-#endif
+
 	np = getnetbyaddr(host_ad, AF_INET);
 	if (np != NULL)
 	    Common::safe_strncpy(name, np->n_name, len);
@@ -218,7 +197,7 @@ static char *INET_sprint(struct sockaddr *sap, int numeric)
     return (buff);
 }
 
-char *INET_sprintmask(struct sockaddr *sap, int numeric,
+static char *INET_sprintmask(struct sockaddr *sap, int numeric,
 		      unsigned int netmask)
 {
     static char buff[128];
@@ -308,7 +287,7 @@ static int INET_getnetmask(char *adr, struct sockaddr *m, char *name)
 }
 
 
-struct aftype inet_aftype =
+static struct aftype inet_aftype =
 {
     "inet", NULL, /*"DARPA Internet", */ AF_INET, sizeof(unsigned long),
     INET_print, INET_sprint, INET_input, INET_reserror,
@@ -383,7 +362,7 @@ static int read_services(void)
 }
 
 
-char *get_sname(int socknumber, char *proto, int numeric)
+static char *get_sname(int socknumber, char *proto, int numeric)
 {
     static char buffer[64], init = 0;
     struct service *item;

@@ -52,6 +52,7 @@ Source::Source(const std::shared_ptr<Core::Event::EventLoop>& loop_,
                                                                           proc_reader_.get());
     fs_collector_ = std::make_unique<Collector::Fs::FsCollector>();
     cgroup_collector_ = std::make_unique<Collector::CGroup::CGroupCollector>();
+    network_collector_ = std::make_unique<Collector::Network::NetworkCollector>();
     node_collector_ = std::make_unique<Collector::Node::Collector>();
     node_collector_ptr_ = node_collector_.get();
 }
@@ -99,6 +100,7 @@ void Source::init() {
             nodeUsageRequest.set_host_object_id(node_collector_ptr_->host_object_id_);
             proc_reader_->GetProcList(&request);
             disk_collector_->GetDiskList(&nodeUsageRequest);
+            network_collector_->run(&nodeUsageRequest);
             proc_reader_->GetMemoryInfo(nodeUsageRequest.mutable_virtual_memory_info());
             fs_collector_->run(&nodeUsageRequest);
             sink->send(nodeUsageRequest);

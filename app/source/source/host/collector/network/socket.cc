@@ -54,7 +54,7 @@ int Socket::open(int family) {
             sfd = af->fd;
     }
     if (sfd < 0)
-        fprintf(stderr, "No usable address families found.\n");
+        SPDLOG_ERROR("No usable address families found.\n");
     return sfd;
 }
 

@@ -58,7 +58,7 @@ static char *UNIX_sprint(struct sockaddr *sap, int numeric)
 }
 
 
-struct aftype unix_aftype =
+static struct aftype unix_aftype =
 {
     "unix", NULL, /*"UNIX Domain", */ AF_UNIX, 0,
     UNIX_print, UNIX_sprint, NULL, NULL,
