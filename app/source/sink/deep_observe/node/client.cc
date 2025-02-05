@@ -35,7 +35,7 @@ struct AsyncUnaryCall : public grpc::ClientUnaryReactor {
     explicit AsyncUnaryCall(const App::Common::Grpc::Headers& headers) {
         for (const auto& [key, value] : headers) {
             context.AddMetadata(key, value);
-            SPDLOG_INFO("add grpc header: {}={}", key, value);
+            SPDLOG_TRACE("add grpc header: {}={}", key, value);
         }
         context.set_deadline(std::chrono::system_clock::now() + std::chrono::seconds(5));
     }
@@ -87,7 +87,7 @@ void Client::SendReportProcessRequest(novaagent::node::v1::ProcessInfoRequest& r
         }
     };
     call->request.Swap(&request);
-    SPDLOG_INFO("ReportProcess request: {}", call->request.ShortDebugString());
+    SPDLOG_DEBUG("ReportProcess request: {}", call->request.ShortDebugString());
     stub_->async()->ReportProcess(&call->context, &call->request, &call->response, call);
     call->StartCall();
 }

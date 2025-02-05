@@ -70,7 +70,7 @@ struct BasicFileReader : public FileReader {
         if (len == -1) {
             auto reason = errno;
             if (reason == EACCES) {
-                SPDLOG_INFO("permission denied for: {}", path);
+                SPDLOG_WARN("permission denied for: {}", path);
             } else if (reason == ENOENT) {
                 SPDLOG_TRACE("empty link file: {}", path);
             } else {

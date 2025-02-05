@@ -2,11 +2,15 @@
 #include "common/const.h"
 #include "config/nova_agent_config.h"
 #include "spdlog/sinks/basic_file_sink.h"
+extern "C" {
+#include <event2/thread.h>
+}
 #include <absl/flags/flag.h>
 #include <absl/flags/parse.h>
 #include <cstring>
 #include <fmt/core.h>
 #include <memory>
+
 
 // Define the flags, keep
 ABSL_FLAG(std::string, c, "", "Path to the configuration file");
@@ -24,6 +28,7 @@ static constexpr std::string_view kBuildType = "release version";
 #endif
 
 int main(int argc, char** argv) {
+    evthread_use_pthreads();
     absl::ParseCommandLine(argc, argv);
     if (absl::GetFlag(FLAGS_v)) {
         fmt::println("version: {}, build: {}, {}", VERSION, GIT_HASH, kBuildType);

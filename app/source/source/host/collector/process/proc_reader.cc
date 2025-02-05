@@ -164,7 +164,7 @@ bool ProcReader::GetProcDetail(const std::string& path, ProcessSampleInfo& sampl
         if (ret) {
             post_processor(content, sample_info.process);
         } else {
-            SPDLOG_ERROR("read file failed: {}", file_path);
+            SPDLOG_WARN("read file failed: {}", file_path);
         }
     }
     return true;
@@ -498,12 +498,12 @@ void ProcReader::GetMemoryInfo(novaagent::node::v1::VirtualMemoryInfo* memory_in
     std::string const cmdline_path = "/proc/meminfo";
     std::string content;
     if (!reader_->ReadFile(cmdline_path, &content)) {
-        SPDLOG_ERROR("read file failed: {}", cmdline_path);
+        SPDLOG_WARN("read file failed: {}", cmdline_path);
         return;
     }
     ProcMemoryInfo info;
     if (!ParseProcMemoryInfo(content, info)) {
-        SPDLOG_ERROR("read file failed: {}", cmdline_path);
+        SPDLOG_WARN("read file failed: {}", cmdline_path);
         return;
     }
     memory_info->set_free(info.free);

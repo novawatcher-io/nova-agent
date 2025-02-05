@@ -92,6 +92,7 @@ void Source::init() {
         int index = static_cast<int>(count % threadPool->getContainer().size());
         // todo: report usage info
         threadPool->task(index, [this] {
+            SPDLOG_DEBUG("start send metric data");
             novaagent::node::v1::ProcessInfoRequest request;
             novaagent::node::v1::NodeInfo nodeUsageRequest;
             nodeUsageRequest.set_company_uuid(config_->GetConfig().company_uuid());
@@ -142,7 +143,8 @@ void Source::init() {
 void Source::start() {
     gpu_collector_->Start();
     oltp_collector_->Start();
-    timer_->enable(std::chrono::seconds(10));
+    timer_->enable(std::chrono::seconds(10 ));
+    SPDLOG_INFO("host source start");
 }
 
 void Source::stop() {
@@ -150,6 +152,7 @@ void Source::stop() {
     gpu_collector_->Stop();
     oltp_collector_->Stop();
     cpu_collector_->Stop();
+    SPDLOG_INFO("host source stop");
 }
 
 void Source::finish() {
