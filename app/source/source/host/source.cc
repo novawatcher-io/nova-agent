@@ -54,6 +54,8 @@ Source::Source(const std::shared_ptr<Core::Event::EventLoop>& loop_,
     cgroup_collector_ = std::make_unique<Collector::CGroup::CGroupCollector>();
     network_collector_ = std::make_unique<Collector::Network::NetworkCollector>();
     node_collector_ = std::make_unique<Collector::Node::Collector>();
+    iostat_collector_ = std::make_unique<Collector::IOStat::IOStatCollector>();
+    iostat_collector_ptr_ = iostat_collector_.get();
     node_collector_ptr_ = node_collector_.get();
 }
 
@@ -69,6 +71,7 @@ void Source::init() {
     std::unique_ptr<Collector::Api::Collector> collector = std::make_unique<Collector::Cpu::Collector>();
     collectors.push_back(std::move(collector));
     collectors.push_back(std::move(node_collector_));
+    collectors.push_back(std::move(iostat_collector_));
 
     // collect basic info
     int index = static_cast<int>(count % threadPool->getContainer().size());
@@ -104,7 +107,9 @@ void Source::init() {
             network_collector_->run(&nodeUsageRequest);
             proc_reader_->GetMemoryInfo(nodeUsageRequest.mutable_virtual_memory_info());
             fs_collector_->run(&nodeUsageRequest);
+            iostat_collector_ptr_->collect(&nodeUsageRequest);
             sink->send(nodeUsageRequest);
+
             auto now = std::chrono::high_resolution_clock::now();
             auto now_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(now.time_since_epoch()).count();
             request.set_series_id(now_ns);
@@ -114,6 +119,7 @@ void Source::init() {
             request.set_hostname(hostname);
             sink->SendUpdate(request);
 
+            // 容器采集任务
             if (container_collector_) {
                 ContainerInfoRequest container_request;
                 container_collector_->GetContainerList(container_request, proc_reader_->GetProcessTable());
@@ -122,8 +128,6 @@ void Source::init() {
                 container_request.set_hostname(hostname);
                 sink->SendContainerInfo(container_request);
             }
-
-
             if (cri_collector_) {
                 ContainerInfoRequest k8s_request;
                 cri_collector_->GetContainerList(k8s_request);
@@ -144,6 +148,7 @@ void Source::start() {
     gpu_collector_->Start();
     oltp_collector_->Start();
     timer_->enable(std::chrono::seconds(10 ));
+    iostat_collector_ptr_->start();
     SPDLOG_INFO("host source start");
 }
 
@@ -152,6 +157,7 @@ void Source::stop() {
     gpu_collector_->Stop();
     oltp_collector_->Stop();
     cpu_collector_->Stop();
+    iostat_collector_ptr_->stop();
     SPDLOG_INFO("host source stop");
 }
 

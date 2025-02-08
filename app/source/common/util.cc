@@ -111,4 +111,19 @@ int nstrcmp(const char *ap, const char *bp)
     return 0;
 }
 
+int is_device(char *sysdev, char *name, int allow_virtual)
+{
+	char syspath[PATH_MAX];
+	char *slash;
+
+	/* Some devices may have a slash in their name (eg. cciss/c0d0...) */
+	while ((slash = strchr(name, '/'))) {
+		*slash = '!';
+	}
+	snprintf(syspath, sizeof(syspath), "%s/%s/%s%s", sysdev, "block", name,
+		 allow_virtual ? "" : "/device");
+
+	return !(access(syspath, F_OK));
+}
+
 }

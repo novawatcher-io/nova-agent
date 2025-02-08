@@ -49,4 +49,20 @@ static void *xrealloc(void *oldp, size_t sz)
 /* like strcmp(), but knows about numbers and ':' alias suffix */
 int nstrcmp(const char *ap, const char *bp);
 
+/*
+ ***************************************************************************
+ * Test whether given name is a device or a partition, using sysfs.
+ *
+ * IN:
+ * @sysdev		sysfs location.
+ * @name		Device or partition name.
+ * @allow_virtual	TRUE if virtual devices are also accepted.
+ *			The device is assumed to be virtual if no
+ *			/sys/block/<device>/device link exists.
+ *
+ * RETURNS:
+ * TRUE if @name is a device, and FALSE if it's a partition.
+ ***************************************************************************
+ */
+int is_device(char *sysdev, char *name, int allow_virtual);
 }

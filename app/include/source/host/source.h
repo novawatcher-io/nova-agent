@@ -15,6 +15,7 @@
 #include "source/host/collector/gpu/gpu_collector.h"
 #include "source/host/collector/oltp/oltp.h"
 #include "source/host/collector/network/network_collector.h"
+#include "source/host/collector/iostat/iostat_collector.h"
 #include "source/host/collector/process/proc_reader.h"
 #include <component/api.h>
 #include <cstdint>
@@ -75,6 +76,8 @@ private:
     std::unique_ptr<App::Source::Host::Collector::Fs::FsCollector> fs_collector_;
     std::unique_ptr<App::Source::Host::Collector::CGroup::CGroupCollector> cgroup_collector_;
     std::unique_ptr<App::Source::Host::Collector::Node::Collector> node_collector_;
+    std::unique_ptr<App::Source::Host::Collector::IOStat::IOStatCollector> iostat_collector_;
+    App::Source::Host::Collector::IOStat::IOStatCollector* iostat_collector_ptr_;
     App::Source::Host::Collector::Node::Collector* node_collector_ptr_;
     std::unique_ptr<App::Source::Host::Collector::Network::NetworkCollector> network_collector_;
     std::vector<std::unique_ptr<Collector::Api::Collector>> collectors;

@@ -50,7 +50,7 @@ struct BasicFileReader : public FileReader {
 
         std::ifstream stat_file(path);
         if (!stat_file.is_open()) {
-            SPDLOG_ERROR("Failed to open file: {}", path);
+            SPDLOG_WARN("Failed to open file: {}", path);
             return false;
         }
         std::stringstream buffer;
