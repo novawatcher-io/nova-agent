@@ -73,6 +73,8 @@ void Source::init() {
     collectors.push_back(std::move(node_collector_));
     collectors.push_back(std::move(iostat_collector_));
 
+    network_collector_->install(&exportInfo);
+
     // collect basic info
     int index = static_cast<int>(count % threadPool->getContainer().size());
     threadPool->task(index, [this] {
@@ -149,6 +151,7 @@ void Source::start() {
     oltp_collector_->Start();
     timer_->enable(std::chrono::seconds(10 ));
     iostat_collector_ptr_->start();
+    network_collector_->start();
     SPDLOG_INFO("host source start");
 }
 
@@ -158,6 +161,7 @@ void Source::stop() {
     oltp_collector_->Stop();
     cpu_collector_->Stop();
     iostat_collector_ptr_->stop();
+    network_collector_->stop();
     SPDLOG_INFO("host source stop");
 }
 

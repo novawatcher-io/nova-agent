@@ -9,6 +9,7 @@ extern "C" {
 #include <ctype.h>
 #include <stdlib.h>
 }
+#include "app/include/common/const.h"
 
 namespace App::Common {
 
@@ -124,6 +125,63 @@ int is_device(char *sysdev, char *name, int allow_virtual)
 		 allow_virtual ? "" : "/device");
 
 	return !(access(syspath, F_OK));
+}
+
+void read_uptime(unsigned long long *uptime)
+{
+	FILE *fp = NULL;
+	char line[128];
+	unsigned long up_sec, up_cent;
+	int err = false;
+
+	if ((fp = fopen(uptime_proc_file.c_str(), "r")) == NULL) {
+		err = true;
+	}
+	else if (fgets(line, sizeof(line), fp) == NULL) {
+		err = true;
+	}
+	else if (sscanf(line, "%lu.%lu", &up_sec, &up_cent) == 2) {
+		*uptime = (unsigned long long) up_sec * 100 +
+			  (unsigned long long) up_cent;
+	}
+	else {
+		err = true;
+	}
+
+	if (fp != NULL) {
+		fclose(fp);
+	}
+	if (err) {
+        SPDLOG_ERROR("Cannot read {}", uptime_proc_file.c_str());
+        return;
+	}
+}
+
+/*
+ ***************************************************************************
+ * Compute time interval.
+ *
+ * IN:
+ * @prev_uptime	Previous uptime value (in jiffies or 1/100th of a second).
+ * @curr_uptime	Current uptime value (in jiffies or 1/100th of a second).
+ *
+ * RETURNS:
+ * Interval of time in jiffies or 1/100th of a second.
+ ***************************************************************************
+ */
+unsigned long long get_interval(unsigned long long prev_uptime,
+				unsigned long long curr_uptime)
+{
+	unsigned long long itv;
+
+	/* prev_time=0 when displaying stats since system startup */
+	itv = curr_uptime - prev_uptime;
+
+	if (!itv) {	/* Paranoia checking */
+		itv = 1;
+	}
+
+	return itv;
 }
 
 }

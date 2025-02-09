@@ -5,11 +5,16 @@
 #include "app/include/source/host/collector/network/af.h"
 #include "app/include/source/host/collector/network/pathname.h"
 #include "app/include/source/host/collector/network/ipx.h"
+#include <opentelemetry/metrics/meter_provider.h>
+#include <opentelemetry/metrics/provider.h>
+
+using App::Source::Host::Collector::Oltp::MetricCollector;
+using App::Source::Host::Collector::Oltp::MultiValue;
+using App::Source::Host::Collector::Oltp::SingleValue;
 
 namespace App::Source::Host::Collector::Network {
 
-
-static int enrich(struct interface *ife, void *cookie, void* ptr)
+int NetworkCollector::doit(struct interface *ife, void *cookie, void* ptr)
 {
     if (!cookie) {
         return -1;
@@ -87,7 +92,7 @@ static int enrich(struct interface *ife, void *cookie, void* ptr)
                               addr6p[0], addr6p[1], addr6p[2], addr6p[3],
                               addr6p[4], addr6p[5], addr6p[6], addr6p[7],
                           &if_idx, &plen, &scope, &dad_status, devname) != EOF) {
-                    if (!strcmp(devname, ife->name)) {
+                    if (!strcmp(devname, ife->name.c_str())) {
                         sprintf(addr6, "%s:%s:%s:%s:%s:%s:%s:%s",
                                 addr6p[0], addr6p[1], addr6p[2], addr6p[3],
                                 addr6p[4], addr6p[5], addr6p[6], addr6p[7]);
@@ -115,6 +120,8 @@ static int enrich(struct interface *ife, void *cookie, void* ptr)
                 }
                 fclose(f);
             }
+
+            storage->load(ife);
             return 0;
         }
     }
@@ -123,6 +130,57 @@ static int enrich(struct interface *ife, void *cookie, void* ptr)
 
 
 void NetworkCollector::run(novaagent::node::v1::NodeInfo* info) {
-    interface_->collect(enrich, info, interface_.get());
+    interface_->collect(
+            std::bind(&NetworkCollector::doit, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3),
+                        info, interface_.get()
+    );
+}
+
+void NetworkCollector::install(novaagent::node::v1::NodeInfo *info) {
+    auto provider = opentelemetry::metrics::Provider::GetMeterProvider();
+    meter_ = provider->GetMeter("network_io", "0.0.1");
+    network_device_metrics_.emplace_back(MetricCollector::Create<double>(meter_, info->company_uuid(), "rx_packets", [&](MultiValue & values) {
+        storage->loadRxPacketsMetric(values);
+    }));
+
+    network_device_metrics_.emplace_back(MetricCollector::Create<double>(meter_, info->company_uuid(), "tx_packets", [&](MultiValue& values) {
+        storage->loadTxPacketsMetric(values);
+    }));
+
+    network_device_metrics_.emplace_back(MetricCollector::Create<double>(meter_, info->company_uuid(), "rx_bytes", [&](MultiValue& values) {
+        storage->loadRxByteMetric(values);
+    }));
+
+    network_device_metrics_.emplace_back(MetricCollector::Create<double>(meter_, info->company_uuid(), "tx_bytes", [&](MultiValue& values) {
+        storage->loadTxBytesMetric(values);
+    }));
+
+    network_device_metrics_.emplace_back(MetricCollector::Create<double>(meter_, info->company_uuid(), "rx_packets_bps", [&](MultiValue& values) {
+        storage->loadRxPacketsBpsMetric(values);
+    }));
+
+    network_device_metrics_.emplace_back(MetricCollector::Create<double>(meter_, info->company_uuid(), "tx_packets_bps", [&](MultiValue& values) {
+        storage->loadTxPacketsBpsMetric(values);
+    }));
+
+    network_device_metrics_.emplace_back(MetricCollector::Create<double>(meter_, info->company_uuid(), "rx_bytes_bps", [&](MultiValue& values) {
+        storage->loadRxByteBpsMetric(values);
+    }));
+
+    network_device_metrics_.emplace_back(MetricCollector::Create<double>(meter_, info->company_uuid(), "tx_bytes_bps", [&](MultiValue& values) {
+        storage->loadTxByteBpsMetric(values);
+    }));
+}
+
+void NetworkCollector::start() {
+    for (auto& metric : network_device_metrics_) {
+        metric->Start();
+    }
+}
+
+void NetworkCollector::stop() {
+    for (auto& metric : network_device_metrics_) {
+        metric->Start();
+    }
 }
 }

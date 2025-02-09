@@ -33,36 +33,25 @@ static int ipx_getaddr(int sock, int ft, struct ifreq *ifr)
 }
 
 struct interface *NetworkInterface::ifCacheAdd(char *name) {
-    struct interface *ife, **nextp, *new1;
+    std::unique_ptr<interface> ife;
+    struct interface* ifeItr = nullptr;
+    struct interface* next;
 
-    if (!int_list)
-        int_last = NULL;
-
-    /* the cache is sorted, so if we hit a smaller if, exit */
-    for (ife = int_last; ife; ife = ife->prev) {
-        int n = Common::nstrcmp(ife->name, name);
-        if (n == 0)
-            return ife;
-        if (n < 0)
-            break;
+    auto iter = int_list.find(name);
+    if (iter != int_list.end()) {
+        return iter->second.get();
     }
-    new1 = (struct interface *)Common::xmalloc(sizeof(*(new1)));
-    Common::safe_strncpy(new1->name, name, IFNAMSIZ);
-    nextp = ife ? &ife->next : &int_list; // keep sorting
-    new1->prev = ife;
-    new1->next = *nextp;
-    if (new1->next)
-        new1->next->prev = new1;
-    else
-        int_last = new1;
-    *nextp = new1;
-    return new1;
+    std::unique_ptr<interface> newInterface = std::make_unique<interface>();
+    auto newInterfacePtr = newInterface.get();
+    newInterface->name = name;
+    int_list[name] = std::move(newInterface);
+    return newInterfacePtr;
 }
 
 int NetworkInterface::readProc(char *target) {
     FILE *fh;
     char buf[512];
-    struct interface *ife;
+    struct interface *ife = nullptr;
     int err;
 
     fh = fopen(_PATH_PROCNET_DEV, "r");
@@ -74,31 +63,8 @@ int NetworkInterface::readProc(char *target) {
     fgets(buf, sizeof buf, fh);	/* eat line */
     fgets(buf, sizeof buf, fh);
 
-#if 0				/* pretty, but can't cope with missing fields */
-    fmt = proc_gen_fmt(_PATH_PROCNET_DEV, 1, fh,
-                       "face", "",	/* parsed separately */
-                       "bytes", "%lu",
-                       "packets", "%lu",
-                       "errs", "%lu",
-                       "drop", "%lu",
-                       "fifo", "%lu",
-                       "frame", "%lu",
-                       "compressed", "%lu",
-                       "multicast", "%lu",
-                       "bytes", "%lu",
-                       "packets", "%lu",
-                       "errs", "%lu",
-                       "drop", "%lu",
-                       "fifo", "%lu",
-                       "colls", "%lu",
-                       "carrier", "%lu",
-                       "compressed", "%lu",
-                       NULL);
-    if (!fmt)
-        return -1;
-#else
+
     procnetdevVsn = procnetdevVersion(buf);
-#endif
 
     err = 0;
     while (fgets(buf, sizeof buf, fh)) {
@@ -115,9 +81,6 @@ int NetworkInterface::readProc(char *target) {
         err = -1;
     }
 
-#if 0
-    free(fmt);
-#endif
     fclose(fh);
     return err;
 }
@@ -272,17 +235,13 @@ int NetworkInterface::read() {
     proc_err = readProc(NULL);
     conf_err = readConfig();
 
-    if_list_all = 1;
-
     if (proc_err < 0 && conf_err < 0)
         return -1;
     else
         return 0;
 }
 
-int NetworkInterface::collect(int (*doit) (struct interface *, void * , void* ptr), void *cookie, void* ptr) {
-    struct interface *ife;
-
+int NetworkInterface::collect(std::function<int (struct interface *, void * , void* ptr)> doit, void *cookie, void* ptr) {
     if (skfd == -1) {
         skfd = socket_->open(0);
         if (skfd == -1) {
@@ -290,12 +249,14 @@ int NetworkInterface::collect(int (*doit) (struct interface *, void * , void* pt
         }
     }
 
-    if (!if_list_all && (read() < 0))
+    if (read() < 0) {
         return -1;
-    for (ife = int_list; ife; ife = ife->next) {
-        int err = doit(ife, cookie, ptr);
-        if (err)
+    }
+    for (auto iter = int_list.begin(); iter != int_list.end(); iter++) {
+        int err = doit(iter->second.get(), cookie, ptr);
+        if (err) {
             return err;
+        }
     }
     return 0;
 }
@@ -305,16 +266,16 @@ int NetworkInterface::if_fetch(struct interface *ife)
 {
     struct ifreq ifr;
     int fd;
-    char *ifname = ife->name;
+    std::string ifname = ife->name;
 
-    strcpy(ifr.ifr_name, ifname);
+    strcpy(ifr.ifr_name, ifname.c_str());
     if (ioctl(skfd, SIOCGIFFLAGS, &ifr) < 0) {
         SPDLOG_ERROR("get SIOCGIFFLAGS failed: {}", strerror(errno));
         return (-1);
     }
     ife->flags = ifr.ifr_flags;
 
-    strcpy(ifr.ifr_name, ifname);
+    strcpy(ifr.ifr_name, ifname.c_str());
     if (ioctl(skfd, SIOCGIFHWADDR, &ifr) < 0)
 	memset(ife->hwaddr, 0, 32);
     else
@@ -322,13 +283,13 @@ int NetworkInterface::if_fetch(struct interface *ife)
 
     ife->type = ifr.ifr_hwaddr.sa_family;
 
-    strcpy(ifr.ifr_name, ifname);
+    strcpy(ifr.ifr_name, ifname.c_str());
     if (ioctl(skfd, SIOCGIFMETRIC, &ifr) < 0)
 	ife->metric = 0;
     else
 	ife->metric = ifr.ifr_metric;
 
-    strcpy(ifr.ifr_name, ifname);
+    strcpy(ifr.ifr_name, ifname.c_str());
     if (ioctl(skfd, SIOCGIFMTU, &ifr) < 0)
 	ife->mtu = 0;
     else
@@ -338,14 +299,14 @@ int NetworkInterface::if_fetch(struct interface *ife)
 	ife->type == ARPHRD_SLIP6 || ife->type == ARPHRD_CSLIP6 ||
 	ife->type == ARPHRD_ADAPT) {
 
-	strcpy(ifr.ifr_name, ifname);
+	strcpy(ifr.ifr_name, ifname.c_str());
 	if (ioctl(skfd, SIOCGOUTFILL, &ifr) < 0)
 	    ife->outfill = 0;
 	else
 	    ife->outfill = (unsigned long) ifr.ifr_data;
 
 
-	strcpy(ifr.ifr_name, ifname);
+	strcpy(ifr.ifr_name, ifname.c_str());
 	if (ioctl(skfd, SIOCGKEEPALIVE, &ifr) < 0)
 	    ife->keepalive = 0;
 	else
@@ -353,20 +314,20 @@ int NetworkInterface::if_fetch(struct interface *ife)
 
     }
 
-    strcpy(ifr.ifr_name, ifname);
+    strcpy(ifr.ifr_name, ifname.c_str());
     if (ioctl(skfd, SIOCGIFMAP, &ifr) < 0)
 	memset(&ife->map, 0, sizeof(struct ifmap));
     else
 	memcpy(&ife->map, &ifr.ifr_map, sizeof(struct ifmap));
 
-    strcpy(ifr.ifr_name, ifname);
+    strcpy(ifr.ifr_name, ifname.c_str());
     if (ioctl(skfd, SIOCGIFMAP, &ifr) < 0)
 	memset(&ife->map, 0, sizeof(struct ifmap));
     else
 	ife->map = ifr.ifr_map;
 
 
-    strcpy(ifr.ifr_name, ifname);
+    strcpy(ifr.ifr_name, ifname.c_str());
     if (ioctl(skfd, SIOCGIFTXQLEN, &ifr) < 0)
 	ife->tx_queue_len = -1;	/* unknown value */
     else
@@ -378,24 +339,24 @@ int NetworkInterface::if_fetch(struct interface *ife)
     /* IPv4 address? */
     fd = socket_->af(AF_INET);
     if (fd >= 0) {
-	strcpy(ifr.ifr_name, ifname);
+	strcpy(ifr.ifr_name, ifname.c_str());
 	ifr.ifr_addr.sa_family = AF_INET;
 	if (ioctl(fd, SIOCGIFADDR, &ifr) == 0) {
 	    ife->has_ip = 1;
 	    ife->addr = ifr.ifr_addr;
-	    strcpy(ifr.ifr_name, ifname);
+	    strcpy(ifr.ifr_name, ifname.c_str());
 	    if (ioctl(fd, SIOCGIFDSTADDR, &ifr) < 0)
 	        memset(&ife->dstaddr, 0, sizeof(struct sockaddr));
 	    else
 	        ife->dstaddr = ifr.ifr_dstaddr;
 
-	    strcpy(ifr.ifr_name, ifname);
+	    strcpy(ifr.ifr_name, ifname.c_str());
 	    if (ioctl(fd, SIOCGIFBRDADDR, &ifr) < 0)
 	        memset(&ife->broadaddr, 0, sizeof(struct sockaddr));
 	    else
 		ife->broadaddr = ifr.ifr_broadaddr;
 
-	    strcpy(ifr.ifr_name, ifname);
+	    strcpy(ifr.ifr_name, ifname.c_str());
 	    if (ioctl(fd, SIOCGIFNETMASK, &ifr) < 0)
 		memset(&ife->netmask, 0, sizeof(struct sockaddr));
 	    else
@@ -407,48 +368,48 @@ int NetworkInterface::if_fetch(struct interface *ife)
     /* DDP address maybe ? */
     fd = socket_->af(AF_APPLETALK);
     if (fd >= 0) {
-	strcpy(ifr.ifr_name, ifname);
-	if (ioctl(fd, SIOCGIFADDR, &ifr) == 0) {
-	    ife->ddpaddr = ifr.ifr_addr;
-	    ife->has_ddp = 1;
-	}
+        strcpy(ifr.ifr_name, ifname.c_str());
+        if (ioctl(fd, SIOCGIFADDR, &ifr) == 0) {
+            ife->ddpaddr = ifr.ifr_addr;
+            ife->has_ddp = 1;
+        }
     }
 
 
     /* Look for IPX addresses with all framing types */
     fd = socket_->af(AF_IPX);
     if (fd >= 0) {
-	strcpy(ifr.ifr_name, ifname);
+	strcpy(ifr.ifr_name, ifname.c_str());
 	if (!ipx_getaddr(fd, IPX_FRAME_ETHERII, &ifr)) {
 	    ife->has_ipx_bb = 1;
 	    ife->ipxaddr_bb = ifr.ifr_addr;
 	}
-	strcpy(ifr.ifr_name, ifname);
+	strcpy(ifr.ifr_name, ifname.c_str());
 	if (!ipx_getaddr(fd, IPX_FRAME_SNAP, &ifr)) {
 	    ife->has_ipx_sn = 1;
 	    ife->ipxaddr_sn = ifr.ifr_addr;
 	}
-	strcpy(ifr.ifr_name, ifname);
+	strcpy(ifr.ifr_name, ifname.c_str());
 	if (!ipx_getaddr(fd, IPX_FRAME_8023, &ifr)) {
 	    ife->has_ipx_e3 = 1;
 	    ife->ipxaddr_e3 = ifr.ifr_addr;
 	}
-	strcpy(ifr.ifr_name, ifname);
-	if (!ipx_getaddr(fd, IPX_FRAME_8022, &ifr)) {
-	    ife->has_ipx_e2 = 1;
-	    ife->ipxaddr_e2 = ifr.ifr_addr;
-	}
+	strcpy(ifr.ifr_name, ifname.c_str());
+        if (!ipx_getaddr(fd, IPX_FRAME_8022, &ifr)) {
+            ife->has_ipx_e2 = 1;
+            ife->ipxaddr_e2 = ifr.ifr_addr;
+        }
     }
 
 
     /* Econet address maybe? */
     fd = socket_->af(AF_ECONET);
     if (fd >= 0) {
-	strcpy(ifr.ifr_name, ifname);
-	if (ioctl(fd, SIOCGIFADDR, &ifr) == 0) {
-	    ife->ecaddr = ifr.ifr_addr;
-	    ife->has_econet = 1;
-	}
+        strcpy(ifr.ifr_name, ifname.c_str());
+        if (ioctl(fd, SIOCGIFADDR, &ifr) == 0) {
+            ife->ecaddr = ifr.ifr_addr;
+            ife->has_econet = 1;
+        }
     }
 
     return 0;

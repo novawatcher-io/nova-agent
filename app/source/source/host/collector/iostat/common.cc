@@ -690,33 +690,6 @@ double ll_sp_value(unsigned long long value1, unsigned long long value2,
 
 /*
  ***************************************************************************
- * Compute time interval.
- *
- * IN:
- * @prev_uptime	Previous uptime value (in jiffies or 1/100th of a second).
- * @curr_uptime	Current uptime value (in jiffies or 1/100th of a second).
- *
- * RETURNS:
- * Interval of time in jiffies or 1/100th of a second.
- ***************************************************************************
- */
-unsigned long long get_interval(unsigned long long prev_uptime,
-				unsigned long long curr_uptime)
-{
-	unsigned long long itv;
-
-	/* prev_time=0 when displaying stats since system startup */
-	itv = curr_uptime - prev_uptime;
-
-	if (!itv) {	/* Paranoia checking */
-		itv = 1;
-	}
-
-	return itv;
-}
-
-/*
- ***************************************************************************
  * Count number of bits set in an array.
  *
  * IN:

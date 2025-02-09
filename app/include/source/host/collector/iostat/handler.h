@@ -285,8 +285,6 @@ private:
 
     unsigned long long uptime_cs[2] = {0, 0};
 
-    unsigned long long tot_jiffies[2] = {0, 0};
-
     struct tm rectime;
 
     int curr = 1;

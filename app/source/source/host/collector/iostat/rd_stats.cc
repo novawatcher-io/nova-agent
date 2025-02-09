@@ -374,46 +374,7 @@ __nr_t read_meminfo(struct stats_memory *st_memory)
 	return 1;
 }
 
-/*
- ***************************************************************************
- * Read machine uptime, independently of the number of processors.
- *
- * OUT:
- * @uptime	Uptime value in hundredths of a second.
- *
- * USED BY:
- * sadc, cifsiostat, iostat, mpstat, pidstat
- ***************************************************************************
- */
-void read_uptime(unsigned long long *uptime)
-{
-	FILE *fp = NULL;
-	char line[128];
-	unsigned long up_sec, up_cent;
-	int err = FALSE;
 
-	if ((fp = fopen(UPTIME, "r")) == NULL) {
-		err = TRUE;
-	}
-	else if (fgets(line, sizeof(line), fp) == NULL) {
-		err = TRUE;
-	}
-	else if (sscanf(line, "%lu.%lu", &up_sec, &up_cent) == 2) {
-		*uptime = (unsigned long long) up_sec * 100 +
-			  (unsigned long long) up_cent;
-	}
-	else {
-		err = TRUE;
-	}
-
-	if (fp != NULL) {
-		fclose(fp);
-	}
-	if (err) {
-		fprintf(stderr, _("Cannot read %s\n"), UPTIME);
-		exit(2);
-	}
-}
 
 /*
  ***************************************************************************

@@ -33,4 +33,6 @@ namespace Container {
 const static std::string docker = "docker";
 }
 
+const static std::string uptime_proc_file =  "/proc/uptime";
+
 }

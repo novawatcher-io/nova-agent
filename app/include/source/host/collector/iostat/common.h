@@ -27,8 +27,6 @@ namespace App::Source::Host::Collector::IOStat {
  ***************************************************************************
  */
 
-#define FALSE	0
-#define TRUE	1
 
 #define PLAIN_OUTPUT	0
 
@@ -88,7 +86,6 @@ enum {
 #define SLASH_SYS		PRE "/sys"
 #define SLASH_DEV		PRE "/dev/"
 #define STAT			PRE "/proc/stat"
-#define UPTIME			PRE "/proc/uptime"
 #define DISKSTATS		PRE "/proc/" __DISKSTATS
 #define INTERRUPTS		PRE "/proc/interrupts"
 #define MEMINFO			PRE "/proc/meminfo"
@@ -106,7 +103,6 @@ enum {
 #define MAX_NAME_LEN		128
 
 #define IGNORE_VIRTUAL_DEVICES	FALSE
-#define ACCEPT_VIRTUAL_DEVICES	TRUE
 #define LOCAL_TIME		FALSE
 
 /* Environment variables */
@@ -333,8 +329,6 @@ char *get_device_name
 	 unsigned int, unsigned int, unsigned int, unsigned int, char *);
 unsigned int get_devmap_major
 	(void);
-unsigned long long get_interval
-	(unsigned long long, unsigned long long);
 char *get_persistent_name_from_pretty
 	(char *);
 char *get_persistent_type_dir

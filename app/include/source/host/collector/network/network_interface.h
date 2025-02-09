@@ -10,8 +10,12 @@ extern "C" {
 #include <net/if.h>
 }
 
-#include "socket.h"
 #include <memory>
+#include <functional>
+#include <string>
+#include <map>
+#include "socket.h"
+#include "cache_storage.h"
 
 namespace App::Source::Host::Collector::Network {
 
@@ -45,8 +49,8 @@ struct user_net_device_stats {
 };
 
 struct interface {
-    struct interface *next, *prev;
-    char name[IFNAMSIZ];	/* interface name        */
+public:
+    std::string name;	/* interface name        */
     short type;			/* if type               */
     short flags;		/* various flags         */
     int metric;			/* routing metric        */
@@ -88,7 +92,7 @@ public:
 
     int read();
 
-    int collect(int (*doit) (struct interface *, void *, void *), void *cookie, void *ptr);
+    int collect(std::function<int (struct interface *, void * , void* ptr)> doit, void *cookie, void *ptr);
 
     int fetch(struct interface *ife);
 
@@ -114,10 +118,9 @@ private:
 
     int skfd = -1;
 
-    struct interface *int_list = nullptr, *int_last = nullptr;
+    std::map<std::string, std::unique_ptr<interface>> int_list;
+
 
     std::unique_ptr<Socket> &socket_;
-
-    int if_list_all = 0;	/* do we have requested the complete proc list, yet? */
 };
 }

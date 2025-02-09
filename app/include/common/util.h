@@ -65,4 +65,20 @@ int nstrcmp(const char *ap, const char *bp);
  ***************************************************************************
  */
 int is_device(char *sysdev, char *name, int allow_virtual);
+
+/*
+ ***************************************************************************
+ * Read machine uptime, independently of the number of processors.
+ *
+ * OUT:
+ * @uptime	Uptime value in hundredths of a second.
+ *
+ * USED BY:
+ * sadc, cifsiostat, iostat, mpstat, pidstat
+ ***************************************************************************
+ */
+void read_uptime(unsigned long long *uptime);
+
+unsigned long long get_interval
+	(unsigned long long, unsigned long long);
 }

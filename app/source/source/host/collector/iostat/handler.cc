@@ -378,11 +378,11 @@ struct io_device *Handler::add_list_device(struct io_device **dlist, char *name,
 		int rc = 0;
 
 		if (!alt_dir[0] || USE_ALL_DIR(flags)) {
-			rc = Common::is_device(SLASH_SYS, name, ACCEPT_VIRTUAL_DEVICES);
+			rc = Common::is_device(SLASH_SYS, name, true);
 		}
 
 		if (alt_dir[0] && (!USE_ALL_DIR(flags) || (USE_ALL_DIR(flags) && !rc))) {
-			rc = Common::is_device(alt_dir, name, ACCEPT_VIRTUAL_DEVICES);
+			rc = Common::is_device(alt_dir, name, true);
 		}
 
 		if (rc) {
@@ -460,100 +460,100 @@ void Handler::compute_device_groups_stats(int curr, struct io_device *d, struct 
  ***************************************************************************
  */
 void Handler::write_stats(int curr, struct tm *rectime, int skip) {
-    int h, hl = 0, hh = 0, fctr = 1, tab = 4, next = FALSE;
+    int h, hl = 0, hh = 0, fctr = 1, tab = 4, next = false;
 	unsigned long long itv;
 	struct io_device *d, *dtmp, *g = NULL, *dnext = NULL;
 	char *dev_name;
 
     /* Calculate time interval in 1/100th of a second */
-	itv = get_interval(uptime_cs[!curr], uptime_cs[curr]);
+	itv = Common::get_interval(uptime_cs[!curr], uptime_cs[curr]);
 
-		struct io_stats *ioi, *ioj, iozero;
+    struct io_stats *ioi, *ioj, iozero;
 
-		memset(&iozero, 0, sizeof(struct io_stats));
+    memset(&iozero, 0, sizeof(struct io_stats));
 
 
 
-        for (d = dev_list; ; d = dnext) {
+    for (d = dev_list; ; d = dnext) {
 
-            if (d == NULL) {
-                if (g == NULL)
-                    /* No group processing in progress */
-                    break;
-                /* Display last group before exit */
-                dnext = NULL;
-                d = g;
-                g = NULL;
-            }
-            else {
-                dnext = d->next;
+        if (d == NULL) {
+            if (g == NULL)
+                /* No group processing in progress */
+                break;
+            /* Display last group before exit */
+            dnext = NULL;
+            d = g;
+            g = NULL;
+        }
+        else {
+            dnext = d->next;
 
-                if (d->dev_tp >= T_GROUP) {
-                    /*
-                     * This is a new group: Save group position
-                     * and display previous one.
-                     */
-                    if (g != NULL) {
-                        dtmp = g;
-                        g = d;
-                        d = dtmp;
-                        memset(g->dev_stats[curr], 0, sizeof(struct io_stats));
-                    }
-                    else {
-                        g = d;
-                        memset(g->dev_stats[curr], 0, sizeof(struct io_stats));
-                        continue;	/* No previous group to display */
-                    }
+            if (d->dev_tp >= T_GROUP) {
+                /*
+                 * This is a new group: Save group position
+                 * and display previous one.
+                 */
+                if (g != NULL) {
+                    dtmp = g;
+                    g = d;
+                    d = dtmp;
+                    memset(g->dev_stats[curr], 0, sizeof(struct io_stats));
+                }
+                else {
+                    g = d;
+                    memset(g->dev_stats[curr], 0, sizeof(struct io_stats));
+                    continue;	/* No previous group to display */
                 }
             }
-
-            if (!d->exist && (d->dev_tp < T_GROUP))
-                /* Current device is non existent (e.g. it has been unregistered from the system */
-                continue;
-
-            if ((g != NULL) && (h == hl) && (d->dev_tp < T_GROUP)) {
-                /* We are within a group: Increment number of disks in the group */
-                (g->dev_tp)++;
-                /* Add current device stats to group */
-                compute_device_groups_stats(curr, d, g);
-            }
-
-            if (DISPLAY_GROUP_TOTAL_ONLY(flags) && (g != NULL) && (d->dev_tp < T_GROUP))
-                continue;
-
-            ioi = d->dev_stats[curr];
-            ioj = d->dev_stats[!curr];
-            /* Origin (unmerged) flush operations are counted as writes */
-            if (!DISPLAY_UNFILTERED(flags)) {
-                if (!ioi->rd_ios && !ioi->wr_ios && !ioi->dc_ios && !ioi->fl_ios)
-                    continue;
-            }
-
-            if (DISPLAY_ZERO_OMIT(flags)) {
-                if ((ioi->rd_ios == ioj->rd_ios) &&
-                    (ioi->wr_ios == ioj->wr_ios) &&
-                    (ioi->dc_ios == ioj->dc_ios) &&
-                    (ioi->fl_ios == ioj->fl_ios))
-                    /* No activity: Ignore it */
-                    continue;
-            }
-
-            /* Try to detect if device has been removed then inserted again */
-            if (((ioi->rd_ios + ioi->wr_ios + ioi->dc_ios + ioi->fl_ios) <
-                (ioj->rd_ios + ioj->wr_ios + ioj->dc_ios + ioj->fl_ios)) &&
-                (!ioj->rd_sectors || (ioi->rd_sectors < ioj->rd_sectors)) &&
-                (!ioj->wr_sectors || (ioi->wr_sectors < ioj->wr_sectors)) &&
-                (!ioj->dc_sectors || (ioi->dc_sectors < ioj->dc_sectors))) {
-                    ioj = &iozero;
-            }
-
-            dev_name = get_device_name(d->major, d->minor, NULL, 0,
-                           DISPLAY_DEVMAP_NAME(flags),
-                           DISPLAY_PERSIST_NAME_I(flags),
-                           FALSE, d->name);
-
-            write_basic_stat(itv, fctr, d, ioi, ioj, tab, dev_name);
         }
+
+        if (!d->exist && (d->dev_tp < T_GROUP))
+            /* Current device is non existent (e.g. it has been unregistered from the system */
+            continue;
+
+        if ((g != NULL) && (h == hl) && (d->dev_tp < T_GROUP)) {
+            /* We are within a group: Increment number of disks in the group */
+            (g->dev_tp)++;
+            /* Add current device stats to group */
+            compute_device_groups_stats(curr, d, g);
+        }
+
+        if (DISPLAY_GROUP_TOTAL_ONLY(flags) && (g != NULL) && (d->dev_tp < T_GROUP))
+            continue;
+
+        ioi = d->dev_stats[curr];
+        ioj = d->dev_stats[!curr];
+        /* Origin (unmerged) flush operations are counted as writes */
+        if (!DISPLAY_UNFILTERED(flags)) {
+            if (!ioi->rd_ios && !ioi->wr_ios && !ioi->dc_ios && !ioi->fl_ios)
+                continue;
+        }
+
+        if (DISPLAY_ZERO_OMIT(flags)) {
+            if ((ioi->rd_ios == ioj->rd_ios) &&
+                (ioi->wr_ios == ioj->wr_ios) &&
+                (ioi->dc_ios == ioj->dc_ios) &&
+                (ioi->fl_ios == ioj->fl_ios))
+                /* No activity: Ignore it */
+                continue;
+        }
+
+        /* Try to detect if device has been removed then inserted again */
+        if (((ioi->rd_ios + ioi->wr_ios + ioi->dc_ios + ioi->fl_ios) <
+            (ioj->rd_ios + ioj->wr_ios + ioj->dc_ios + ioj->fl_ios)) &&
+            (!ioj->rd_sectors || (ioi->rd_sectors < ioj->rd_sectors)) &&
+            (!ioj->wr_sectors || (ioi->wr_sectors < ioj->wr_sectors)) &&
+            (!ioj->dc_sectors || (ioi->dc_sectors < ioj->dc_sectors))) {
+                ioj = &iozero;
+        }
+
+        dev_name = get_device_name(d->major, d->minor, NULL, 0,
+                       DISPLAY_DEVMAP_NAME(flags),
+                       DISPLAY_PERSIST_NAME_I(flags),
+                       false, d->name);
+
+        write_basic_stat(itv, fctr, d, ioi, ioj, tab, dev_name);
+    }
 
 }
 
@@ -676,20 +676,10 @@ std::map<std::string, std::shared_ptr<dev_stats>> Handler::stat() {
     }
     init_stats();
     /* Read system uptime */
-    read_uptime(&(uptime_cs[curr]));
+    Common::read_uptime(&(uptime_cs[curr]));
 
     /* Read stats for CPU "all" */
     read_stat_cpu(st_cpu[curr], 1);
-
-    /*
-     * Compute the total number of jiffies spent by all processors.
-     * NB: Don't add cpu_guest/cpu_guest_nice because cpu_user/cpu_nice
-     * already include them.
-     */
-    tot_jiffies[curr] = st_cpu[curr]->cpu_user + st_cpu[curr]->cpu_nice +
-                st_cpu[curr]->cpu_sys + st_cpu[curr]->cpu_idle +
-                st_cpu[curr]->cpu_iowait + st_cpu[curr]->cpu_hardirq +
-                st_cpu[curr]->cpu_steal + st_cpu[curr]->cpu_softirq;
 
 
     read_sysfs_dlist_stat(curr);
