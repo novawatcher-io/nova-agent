@@ -13,6 +13,8 @@ public:
     ~Collector() = default;
     void run(novaagent::node::v1::NodeInfo* info) final;
 
+    void install(novaagent::node::v1::NodeInfo* info) final {};
+
     uint64_t host_object_id_;
     std::string host_name_;
     std::string sysname_;

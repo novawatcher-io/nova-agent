@@ -49,18 +49,14 @@ void CacheStorage::loadRxPacketsBpsMetric(MultiValue & values) {
     if (caches.empty()) {
         return;
     }
-    values.resize(caches.size() + 1);
+    values.resize(caches.size());
 
-    double sum = 0;
     int count = 0;
     for (const auto& data : caches) {
         values[count].data = double(data.second->rx_packets_bps);
         values[count].labels["dev_name"] = data.first;
-        sum += data.second->rx_packets_bps;
         count++;
     }
-    values[count].data = sum;
-    values[count].labels["dev_name"] = "total";
     return;
 }
 
@@ -69,18 +65,14 @@ void CacheStorage::loadRxByteBpsMetric(MultiValue & values) {
     if (caches.empty()) {
         return;
     }
-    values.resize(caches.size() + 1);
+    values.resize(caches.size());
 
-    double sum = 0;
     int count = 0;
     for (const auto& data : caches) {
         values[count].data = double(data.second->rx_bytes_bps);
         values[count].labels["dev_name"] = data.first;
-        sum += data.second->rx_bytes_bps;
         count++;
     }
-    values[count].data = sum;
-    values[count].labels["dev_name"] = "total";
     return;
 }
 
@@ -89,18 +81,14 @@ void CacheStorage::loadTxPacketsBpsMetric(MultiValue & values) {
     if (caches.empty()) {
         return;
     }
-    values.resize(caches.size() + 1);
+    values.resize(caches.size());
 
-    double sum = 0;
     int count = 0;
     for (const auto& data : caches) {
         values[count].data = double(data.second->tx_packets_bps);
         values[count].labels["dev_name"] = data.first;
-        sum += data.second->tx_packets_bps;
         count++;
     }
-    values[count].data = sum;
-    values[count].labels["dev_name"] = "total";
     return;
 }
 
@@ -109,18 +97,14 @@ void CacheStorage::loadTxByteBpsMetric(MultiValue & values) {
     if (caches.empty()) {
         return;
     }
-    values.resize(caches.size() + 1);
+    values.resize(caches.size());
 
-    double sum = 0;
     int count = 0;
     for (const auto& data : caches) {
         values[count].data = double(data.second->tx_bytes_bps);
         values[count].labels["dev_name"] = data.first;
-        sum += data.second->tx_bytes_bps;
         count++;
     }
-    values[count].data = sum;
-    values[count].labels["dev_name"] = "total";
     return;
 }
 
@@ -129,18 +113,14 @@ void CacheStorage::loadRxPacketsMetric(MultiValue & values) {
     if (caches.empty()) {
         return;
     }
-    values.resize(caches.size() + 1);
+    values.resize(caches.size());
 
-    double sum = 0;
     int count = 0;
     for (const auto& data : caches) {
         values[count].data = double(data.second->rx_packets);
         values[count].labels["dev_name"] = data.first;
-        sum += data.second->rx_packets;
         count++;
     }
-    values[count].data = sum;
-    values[count].labels["dev_name"] = "total";
     return;
 }
 
@@ -149,18 +129,14 @@ void CacheStorage::loadRxByteMetric(MultiValue & values) {
     if (caches.empty()) {
         return;
     }
-    values.resize(caches.size() + 1);
+    values.resize(caches.size());
 
-    double sum = 0;
     int count = 0;
     for (const auto& data : caches) {
         values[count].data = double(data.second->rx_bytes);
         values[count].labels["dev_name"] = data.first;
-        sum += data.second->rx_bytes;
         count++;
     }
-    values[count].data = sum;
-    values[count].labels["dev_name"] = "total";
     return;
 }
 
@@ -169,18 +145,14 @@ void CacheStorage::loadTxPacketsMetric(MultiValue & values) {
     if (caches.empty()) {
         return;
     }
-    values.resize(caches.size() + 1);
+    values.resize(caches.size());
 
-    double sum = 0;
     int count = 0;
     for (const auto& data : caches) {
         values[count].data = double(data.second->tx_packets);
         values[count].labels["dev_name"] = data.first;
-        sum += data.second->tx_packets;
         count++;
     }
-    values[count].data = sum;
-    values[count].labels["dev_name"] = "total";
     return;
 }
 
@@ -189,18 +161,14 @@ void CacheStorage::loadTxBytesMetric(MultiValue & values) {
     if (caches.empty()) {
         return;
     }
-    values.resize(caches.size() + 1);
+    values.resize(caches.size());
 
-    double sum = 0;
     int count = 0;
     for (const auto& data : caches) {
         values[count].data = double(data.second->tx_bytes);
         values[count].labels["dev_name"] = data.first;
-        sum += data.second->tx_bytes;
         count++;
     }
-    values[count].data = sum;
-    values[count].labels["dev_name"] = "total";
     return;
 }
 }

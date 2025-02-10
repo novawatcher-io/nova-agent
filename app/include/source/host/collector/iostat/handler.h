@@ -33,18 +33,14 @@ public:
         if (device_stats.empty()) {
             return;
         }
-        values.resize(device_stats.size() + 1);
+        values.resize(device_stats.size());
 
-        double sum = 0;
         int count = 0;
         for (const auto& data : device_stats) {
             values[count].data = data.second->tps;
             values[count].labels["dev_name"] = data.first;
-            sum += data.second->tps;
             count++;
         }
-        values[count].data = sum;
-        values[count].labels["dev_name"] = "total";
         return;
     }
 
@@ -54,18 +50,14 @@ public:
         if (device_stats.empty()) {
             return;
         }
-        values.resize(device_stats.size() + 1);
+        values.resize(device_stats.size());
 
-        double sum = 0;
         int count = 0;
         for (const auto& data : device_stats) {
             values[count].data = data.second->read_bps;
             values[count].labels["dev_name"] = data.first;
-            sum += data.second->tps;
             count++;
         }
-        values[count].data = sum;
-        values[count].labels["dev_name"] = "total";
         return;
     }
 
@@ -75,18 +67,14 @@ public:
         if (device_stats.empty()) {
             return;
         }
-        values.resize(device_stats.size() + 1);
+        values.resize(device_stats.size());
 
-        double sum = 0;
         int count = 0;
         for (const auto& data : device_stats) {
             values[count].data = data.second->write_bps;
             values[count].labels["dev_name"] = data.first;
-            sum += data.second->tps;
             count++;
         }
-        values[count].data = sum;
-        values[count].labels["dev_name"] = "total";
         return;
     }
 
@@ -96,18 +84,14 @@ public:
         if (device_stats.empty()) {
             return;
         }
-        values.resize(device_stats.size() + 1);
+        values.resize(device_stats.size());
 
-        double sum = 0;
         int count = 0;
         for (const auto& data : device_stats) {
             values[count].data = data.second->dscd_bps;
             values[count].labels["dev_name"] = data.first;
-            sum += data.second->tps;
             count++;
         }
-        values[count].data = sum;
-        values[count].labels["dev_name"] = "total";
         return;
     }
 
@@ -117,18 +101,14 @@ public:
         if (device_stats.empty()) {
             return;
         }
-        values.resize(device_stats.size() + 1);
+        values.resize(device_stats.size());
 
-        double sum = 0;
         int count = 0;
         for (const auto& data : device_stats) {
             values[count].data = double(data.second->read_bytes);
             values[count].labels["dev_name"] = data.first;
-            sum += data.second->tps;
             count++;
         }
-        values[count].data = sum;
-        values[count].labels["dev_name"] = "total";
         return;
     }
 
@@ -138,18 +118,14 @@ public:
         if (device_stats.empty()) {
             return;
         }
-        values.resize(device_stats.size() + 1);
+        values.resize(device_stats.size());
 
-        double sum = 0;
         int count = 0;
         for (const auto& data : device_stats) {
             values[count].data = double(data.second->write_bytes);
             values[count].labels["dev_name"] = data.first;
-            sum += data.second->tps;
             count++;
         }
-        values[count].data = sum;
-        values[count].labels["dev_name"] = "total";
         return;
     }
 
@@ -159,18 +135,14 @@ public:
         if (device_stats.empty()) {
             return;
         }
-        values.resize(device_stats.size() + 1);
+        values.resize(device_stats.size());
 
-        double sum = 0;
         int count = 0;
         for (const auto& data : device_stats) {
             values[count].data = double(data.second->dscd_bytes);
             values[count].labels["dev_name"] = data.first;
-            sum += data.second->tps;
             count++;
         }
-        values[count].data = sum;
-        values[count].labels["dev_name"] = "total";
         return;
     }
 private:

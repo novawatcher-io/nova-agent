@@ -6,6 +6,7 @@ namespace App::Source::Host::Collector::Cpu {
 class CpuFeature : public Api::Collector {
 public:
     void run(novaagent::node::v1::NodeInfo* info) final;
+    void install(novaagent::node::v1::NodeInfo* info) final {};
     void stop();
 
 private:

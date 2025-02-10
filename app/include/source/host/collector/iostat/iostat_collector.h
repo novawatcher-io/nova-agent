@@ -18,12 +18,14 @@ public:
     IOStatCollector() : handler(std::make_unique<Handler>()) {};
     // 运行采集任务
     void collect(novaagent::node::v1::NodeInfo* info);
+
+    void run(novaagent::node::v1::NodeInfo* info) {};
     // 安装上报
-    void run(novaagent::node::v1::NodeInfo* info);
+    void install(novaagent::node::v1::NodeInfo* info) final;
 
-    void start();
+    void start() final;
 
-    void stop();
+    void stop() final;
 
 private:
     std::unique_ptr<Handler> handler;

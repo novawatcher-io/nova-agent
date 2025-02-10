@@ -74,6 +74,7 @@ void Source::init() {
     collectors.push_back(std::move(iostat_collector_));
 
     network_collector_->install(&exportInfo);
+    network_collector_->install(&exportInfo);
 
     // collect basic info
     int index = static_cast<int>(count % threadPool->getContainer().size());

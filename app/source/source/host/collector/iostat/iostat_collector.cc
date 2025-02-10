@@ -17,7 +17,7 @@ void IOStatCollector::collect(novaagent::node::v1::NodeInfo* info) {
     return;
 }
 
-void IOStatCollector::run(novaagent::node::v1::NodeInfo* info) {
+void IOStatCollector::install(novaagent::node::v1::NodeInfo* info) {
     auto provider = opentelemetry::metrics::Provider::GetMeterProvider();
     meter_ = provider->GetMeter("disk_io", "0.0.1");
     iostat_metrics_.emplace_back(MetricCollector::Create<double>(meter_, info->company_uuid(), "disk_io_tps", [&](MultiValue & values) {

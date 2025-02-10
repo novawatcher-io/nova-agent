@@ -11,6 +11,8 @@ class FsCollector : public Api::Collector {
 public:
     void run(novaagent::node::v1::NodeInfo* info);
 
+    void install(novaagent::node::v1::NodeInfo* info) final {};
+
     virtual ~FsCollector() = default;
 };
 }

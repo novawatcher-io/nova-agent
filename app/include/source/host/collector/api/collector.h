@@ -7,6 +7,12 @@ class Collector {
 public:
     virtual void run(novaagent::node::v1::NodeInfo* info) = 0;
 
+    virtual void install(novaagent::node::v1::NodeInfo* info) = 0;
+
+    virtual void start() {};
+
+    virtual void stop()  {};
+
     virtual ~Collector() = default;
 };
 } // namespace App::Source::Host::Collector::Api

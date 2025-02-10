@@ -143,6 +143,10 @@ void NetworkCollector::install(novaagent::node::v1::NodeInfo *info) {
         storage->loadRxPacketsMetric(values);
     }));
 
+    network_device_metrics_.emplace_back(MetricCollector::Create<double>(meter_, info->company_uuid(), "rx_dev_packets", [&](MultiValue & values) {
+        storage->loadRxPacketsMetric(values);
+    }));
+
     network_device_metrics_.emplace_back(MetricCollector::Create<double>(meter_, info->company_uuid(), "tx_packets", [&](MultiValue& values) {
         storage->loadTxPacketsMetric(values);
     }));

@@ -23,11 +23,11 @@ public:
 
     void run(novaagent::node::v1::NodeInfo* info) final;
 
-    void install(novaagent::node::v1::NodeInfo* info);
+    void install(novaagent::node::v1::NodeInfo* info) final;
 
-    void start();
+    void start() final;
 
-    void stop();
+    void stop() final;
 
 private:
     int doit(struct interface *ife, void *cookie, void* ptr);

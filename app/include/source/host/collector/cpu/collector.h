@@ -47,7 +47,11 @@ public:
 
     void run(novaagent::node::v1::NodeInfo* info) final;
 
-    void stop();
+    void install(novaagent::node::v1::NodeInfo* info) final {};
+
+    void start() {};
+
+    void stop() final;
 
 private:
     std::vector<std::unique_ptr<Api::Collector>> cpuCollectors;
