@@ -104,7 +104,7 @@ int Handler::read_sysfs_all_devices_stat_work(int curr, char *sysblock)
 		if (read_sysfs_file_stat_work(dfile, &sdev) < 0)
 			continue;
 
-		d = add_list_device(&dev_list, drd->d_name, 0, UKWN_MAJ_NR, 0);
+		d = add_list_device(dev_list, drd->d_name, 0, UKWN_MAJ_NR, 0);
 		if (d != NULL) {
 			*(d->dev_stats[curr]) = sdev;
 		}
@@ -266,7 +266,7 @@ void Handler::read_diskstats_stat_work(int curr, char *diskstats)
 			/* Unknown entry: Ignore it */
 			continue;
 
-		d = add_list_device(&dev_list, dev_name, 0, major, minor);
+		d = add_list_device(dev_list, dev_name, 0, major, minor);
 		if (d != NULL) {
 			*d->dev_stats[curr] = sdev;
 		}
@@ -297,79 +297,35 @@ void Handler::read_diskstats_stat_work(int curr, char *diskstats)
  * don't want to add it.
  ***************************************************************************
  */
-struct io_device *Handler::add_list_device(struct io_device **dlist, char *name, int dtype,
+struct io_device *Handler::add_list_device(std::map<std::string, std::unique_ptr<io_device>>& dlist, char *name, int dtype,
 				  int major, int minor)
 {
-	struct io_device *d, *ds;
+//	struct io_device *d, *ds;
 	int i, maj_nr, min_nr;
 
 	if (strnlen(name, MAX_NAME_LEN) == MAX_NAME_LEN)
 		/* Device name is too long */
 		return NULL;
 
-	while (*dlist != NULL) {
+    auto iter = dlist.find(name);
+    if (iter != dlist.end()) {
+        /* Device found in list */
+        if ((dtype == T_PART_DEV) && (iter->second->dev_tp == T_DEV)) {
+            iter->second->dev_tp = dtype;
+        }
+        iter->second->exist = true;
+        return iter->second.get();
+    }
+    std::unique_ptr<io_device> d = std::make_unique<io_device>();
+    auto ret = d.get();
 
-		d = *dlist;
-		if ((i = strcmp(d->name, name)) == 0) {
-			/* Device found in list */
-			if ((dtype == T_PART_DEV) && (d->dev_tp == T_DEV)) {
-				d->dev_tp = dtype;
-			}
-			d->exist = true;
-			return d;
-		}
-		if (!GROUP_DEFINED(flags) && !DISPLAY_EVERYTHING(flags) && (i > 0))
-			/*
-			 * If no group defined and we don't use /proc/diskstats,
-			 * insert current device in alphabetical order.
-			 * NB: Using /proc/diskstats ("iostat -p ALL") is a bit better than
-			 * using alphabetical order because sda10 comes after sda9...
-			 */
-			break;
-
-		dlist = &(d->next);
-	}
-
-	/* Device not found */
-	ds = *dlist;
-
-	/* Add device to the list */
-	if ((*dlist = (struct io_device *) malloc(sizeof(struct io_device))) == NULL) {
-		SPDLOG_ERROR("malloc io_device list failed");
-		exit(4);
-	}
-	memset(*dlist, 0, sizeof(struct io_device));
-
-	d = *dlist;
 	for (i = 0; i < 2; i++) {
-		if ((d->dev_stats[i] = (struct io_stats *) malloc(sizeof(struct io_stats))) == NULL) {
-			SPDLOG_ERROR("malloc io_stats  failed");
-			exit(4);
-		}
-		memset(d->dev_stats[i], 0, sizeof(struct io_stats));
+        d->dev_stats[i] = std::make_unique<io_stats>();
 	}
-	if (DISPLAY_DEVMAP_NAME(flags)) {
-		char *dm_name;
+    strncpy(d->name, name, sizeof(d->name));
 
-		/*
-		 * Save device mapper name (e.g. "dm-0") instead of
-		 * its registered name (e.g. "virtualhd-home")
-		 * This is because we won't read stats for a file named "virtualhd-home" but
-		 * for a file named "dm-0" (we will display "virtualhd-home" anyway at the end
-		 * because option -N has been used).
-		 */
-		dm_name = get_dm_name_from_registered_name(name);
-		if (!dm_name) {
-			dm_name = name;
-		}
-		strncpy(d->name, dm_name, sizeof(d->name) - 1);
-	}
-	else {
-		strncpy(d->name, name, sizeof(d->name));
-	}
 	d->name[MAX_NAME_LEN - 1] = '\0';
 	d->exist = true;
-	d->next = ds;
 
 	if (dtype == T_GROUP) {
 		d->dev_tp = dtype;
@@ -407,7 +363,8 @@ struct io_device *Handler::add_list_device(struct io_device **dlist, char *name,
 		}
 	}
 
-	return d;
+    dlist[name] = std::move(d);
+	return ret;
 }
 
 /*
@@ -462,7 +419,7 @@ void Handler::compute_device_groups_stats(int curr, struct io_device *d, struct 
 void Handler::write_stats(int curr, struct tm *rectime, int skip) {
     int h, hl = 0, hh = 0, fctr = 1, tab = 4, next = false;
 	unsigned long long itv;
-	struct io_device *d, *dtmp, *g = NULL, *dnext = NULL;
+	struct io_device *dtmp, *g = NULL;
 	char *dev_name;
 
     /* Calculate time interval in 1/100th of a second */
@@ -472,39 +429,15 @@ void Handler::write_stats(int curr, struct tm *rectime, int skip) {
 
     memset(&iozero, 0, sizeof(struct io_stats));
 
+    for (auto iter = dev_list.begin(); iter != dev_list.end(); iter++) {
+        struct io_device *d = iter->second.get();
 
-
-    for (d = dev_list; ; d = dnext) {
-
-        if (d == NULL) {
-            if (g == NULL)
-                /* No group processing in progress */
-                break;
-            /* Display last group before exit */
-            dnext = NULL;
-            d = g;
-            g = NULL;
-        }
-        else {
-            dnext = d->next;
-
-            if (d->dev_tp >= T_GROUP) {
-                /*
-                 * This is a new group: Save group position
-                 * and display previous one.
-                 */
-                if (g != NULL) {
-                    dtmp = g;
-                    g = d;
-                    d = dtmp;
-                    memset(g->dev_stats[curr], 0, sizeof(struct io_stats));
-                }
-                else {
-                    g = d;
-                    memset(g->dev_stats[curr], 0, sizeof(struct io_stats));
-                    continue;	/* No previous group to display */
-                }
-            }
+        if (d->dev_tp >= T_GROUP) {
+            /*
+             * This is a new group: Save group position
+             * and display previous one.
+             */
+            memset(g->dev_stats[curr].get(), 0, sizeof(struct io_stats));
         }
 
         if (!d->exist && (d->dev_tp < T_GROUP))
@@ -521,8 +454,8 @@ void Handler::write_stats(int curr, struct tm *rectime, int skip) {
         if (DISPLAY_GROUP_TOTAL_ONLY(flags) && (g != NULL) && (d->dev_tp < T_GROUP))
             continue;
 
-        ioi = d->dev_stats[curr];
-        ioj = d->dev_stats[!curr];
+        ioi = d->dev_stats[curr].get();
+        ioj = d->dev_stats[!curr].get();
         /* Origin (unmerged) flush operations are counted as writes */
         if (!DISPLAY_UNFILTERED(flags)) {
             if (!ioi->rd_ios && !ioi->wr_ios && !ioi->dc_ios && !ioi->fl_ios)
@@ -667,8 +600,18 @@ void Handler::init_stats(void)
 	}
 }
 
+void Handler::destroy_stats(void) {
+	int i;
+
+	/* Allocate structures for CPUs "all" and 0 */
+	for (i = 0; i < 2; i++) {
+        free(st_cpu[i]);
+	}
+}
+
 
 std::map<std::string, std::shared_ptr<dev_stats>> Handler::stat() {
+    dev_list.clear();
 	int skip = 0;
     {
         std::lock_guard<std::mutex> lock(mtx_);
@@ -690,6 +633,8 @@ std::map<std::string, std::shared_ptr<dev_stats>> Handler::stat() {
     write_stats(curr, &rectime, skip);
 
     curr ^= 1;
+
+    destroy_stats();
 
     return device_stats;
 }

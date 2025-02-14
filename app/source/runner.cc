@@ -37,7 +37,6 @@ void Runner::onstop(evutil_socket_t /*sig*/, short /*events*/, void* param) {
     // 主线程执行结束后会依次执行所有模块的shutdown从而停止所有服务
     SPDLOG_DEBUG("stop signal received, stopping...");
     node->loop->quit();
-    exit(0);
 }
 
 void Runner::initMetricExporter() {
@@ -107,7 +106,7 @@ void Runner::run() {
     auto threadManager = std::make_shared<Core::Component::UnixThreadContainer>();
     // 初始化线程池
     for (int i = 0; i < 2; i++) {
-        auto thread = std::make_shared<Core::OS::UnixThread>();
+        auto thread = std::make_unique<Core::OS::UnixThread>();
         threadManager->reg(i, thread);
     }
 
@@ -133,7 +132,6 @@ void Runner::run() {
 
     loop->loop();
     SPDLOG_INFO("main loop stopped, start to shutdown...");
-
     //    manager->shutdown();
     if (config_->GetConfig().has_trace_server_config() && config_->GetConfig().trace_server_config().enable()) {
         sourceThread->stop();
@@ -148,8 +146,12 @@ void Runner::run() {
             hostSource->finish();
         }
     }
-    httpSource->stop();
+
+    if (config_->GetConfig().has_http_server_config() && config_->GetConfig().http_server_config().enable()) {
+        httpSource->stop();
+    }
     cleanupMetrics();
+    threadManager->stop();
     SPDLOG_INFO("app stopped");
 }
 } // namespace App

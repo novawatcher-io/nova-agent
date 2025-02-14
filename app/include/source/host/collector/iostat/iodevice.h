@@ -4,6 +4,9 @@
 
 #pragma once
 
+#include <memory>
+#include "iostat.h"
+
 #define MAX_IOSTAT_NAME_LEN		128
 
 namespace App::Source::Host::Collector::IOStat {
@@ -21,7 +24,6 @@ struct io_device {
 	/* major and minor numbers (not set for T_GROUP "devices") */
 	int major;
 	int minor;
-	struct io_stats *dev_stats[2];
-	struct io_device *next;
+    std::unique_ptr<io_stats> dev_stats[2];
 };
 }

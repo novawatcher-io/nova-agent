@@ -55,10 +55,11 @@ Client::Client(Common::Grpc::ClientOptions options) : options_(std::move(options
 
 void Client::SendRegisterRequest(novaagent::node::v1::NodeInfo& request) {
     auto* call = new AsyncUnaryCall<NodeInfo, NodeRes>(options_.metadata);
-    call->callback = [](const grpc::Status& status, const NodeRes& resp) {
+    call->callback = [call](const grpc::Status& status, const NodeRes& resp) {
         if (!status.ok()) {
             SPDLOG_ERROR("error: {}", status.error_message());
         }
+        delete (call);
     };
     call->request.Swap(&request);
     SPDLOG_DEBUG("Register request: {}", call->request.ShortDebugString());
@@ -68,10 +69,11 @@ void Client::SendRegisterRequest(novaagent::node::v1::NodeInfo& request) {
 
 void Client::SendUpdateRequest(novaagent::node::v1::NodeUsage& request) {
     auto* call = new AsyncUnaryCall<NodeUsage, NodeRes>(options_.metadata);
-    call->callback = [](const grpc::Status& status, const NodeRes& resp) {
+    call->callback = [call](const grpc::Status& status, const NodeRes& resp) {
         if (!status.ok()) {
             SPDLOG_ERROR("error: {}", status.error_message());
         }
+        delete (call);
     };
     call->request.Swap(&request);
     SPDLOG_INFO("Update request: {}", call->request.ShortDebugString());
@@ -81,10 +83,11 @@ void Client::SendUpdateRequest(novaagent::node::v1::NodeUsage& request) {
 
 void Client::SendReportProcessRequest(novaagent::node::v1::ProcessInfoRequest& request) {
     auto* call = new AsyncUnaryCall<ProcessInfoRequest, NodeRes>(options_.metadata);
-    call->callback = [](const grpc::Status& status, const NodeRes& resp) {
+    call->callback = [call](const grpc::Status& status, const NodeRes& resp) {
         if (!status.ok()) {
             SPDLOG_ERROR("error: {}", status.error_message());
         }
+        delete (call);
     };
     call->request.Swap(&request);
     SPDLOG_DEBUG("ReportProcess request: {}", call->request.ShortDebugString());
@@ -94,10 +97,11 @@ void Client::SendReportProcessRequest(novaagent::node::v1::ProcessInfoRequest& r
 
 void Client::SendReportContainerRequest(novaagent::node::v1::ContainerInfoRequest& request) {
     auto* call = new AsyncUnaryCall<ContainerInfoRequest, NodeRes>(options_.metadata);
-    call->callback = [](const grpc::Status& status, const NodeRes& resp) {
+    call->callback = [call](const grpc::Status& status, const NodeRes& resp) {
         if (!status.ok()) {
             SPDLOG_ERROR("error: {}", status.error_message());
         }
+        delete (call);
     };
     call->request.Swap(&request);
     SPDLOG_INFO("ReportContainer request: {}", call->request.ShortDebugString());

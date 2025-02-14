@@ -12,6 +12,7 @@
 #include <absl/base/thread_annotations.h>
 
 #include "rd_stats.h"
+#include "iodevice.h"
 #include "iostat.h"
 #include "app/include/source/host/collector/oltp/oltp_metric.h"
 
@@ -152,7 +153,7 @@ private:
 
     void read_diskstats_stat_work(int curr, char *diskstats);
 
-    struct io_device *add_list_device(struct io_device **dlist, char *name, int dtype,
+    struct io_device *add_list_device(std::map<std::string, std::unique_ptr<io_device>>& dlist, char *name, int dtype,
 				  int major, int minor);
 
     /*
@@ -247,13 +248,15 @@ private:
      */
     void init_stats(void);
 
+    void destroy_stats(void);
+
     uint64_t flags = 0;	/* Flag for common options and system state */
 
     char alt_dir[MAX_FILE_LEN];
 
     struct stats_cpu *st_cpu[2];
 
-    struct io_device *dev_list = nullptr;
+    std::map<std::string, std::unique_ptr<io_device>> dev_list;
 
     unsigned long long uptime_cs[2] = {0, 0};
 

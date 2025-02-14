@@ -62,6 +62,7 @@ std::string CPUTopology::GetTopologyXML() {
     }
     std::string result(buffer, len);
     hwloc_free_xmlbuffer(topology, buffer);
+    hwloc_topology_destroy(topology);
     return result;
 }
 
