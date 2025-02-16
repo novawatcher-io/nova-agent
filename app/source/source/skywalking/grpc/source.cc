@@ -7,6 +7,7 @@
 #include "app/include/intercept/opentelemetry/log/skywalking/processor.h"
 #include "app/include/intercept/opentelemetry/metric/skywalking/processor.h"
 #include "app/include/intercept/opentelemetry/trace/skywalking/processor.h"
+#include "app/include/intercept/opentelemetry/trace/topology/processor.h"
 #include "app/include/sink/channel/grpc_channel.h"
 #include "app/include/sink/opentelemetry/log/grpc/sink.h"
 #include "app/include/sink/opentelemetry/metric/grpc/sink.h"
@@ -42,9 +43,13 @@ void Source::start() {
     // Finally assemble the server.
     channel = std::make_shared<Sink::Channel::GrpcChannel>(cq_);
 
+    // 构建pipeline
     tracePipeline = std::make_unique<App::Sink::Pipeline::Pipeline>();
     std::unique_ptr<Core::Component::Interceptor> traceProcess = std::make_unique<Intercept::Opentelemetry::Trace::Skywalking::Processor>(*exposer_);
     tracePipeline->addIntercept(traceProcess);
+    // 构建服务拓扑
+    std::unique_ptr<Core::Component::Interceptor> topoProcess = std::make_unique<Intercept::Opentelemetry::Trace::Topology::Processor>();
+    tracePipeline->addIntercept(topoProcess);
     std::shared_ptr<Core::Component::Queue> queue = channel;
     tracePipeline->bindChannel(queue);
     std::unique_ptr<Core::Component::Consumer> traceSink = std::make_unique<Sink::OpenTelemetry::Trace::Grpc::Sink>(cq_);

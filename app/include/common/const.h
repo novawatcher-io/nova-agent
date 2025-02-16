@@ -20,6 +20,30 @@ const static std::string info = "info";
 namespace Trace {
 namespace Skywalking {
 const static std::string skywalking_grpc = "skywalking-grpc";
+static std::string AttributeSkywalkingSegmentID = "sw8.segment_id";
+static std::string AttributeRefType = "refType";
+static std::string  AttributeParentService             = "parent.service";
+static std::string  AttributeParentInstance            = "parent.service.instance";
+static std::string  AttributeParentEndpoint            = "parent.endpoint";
+static std::string  AttributeSkywalkingSpanID          = "sw8.span_id";
+static std::string AttributeSkywalkingTraceID         = "sw8.trace_id";
+static std::string AttributeSkywalkingParentSpanID    = "sw8.parent_span_id";
+static std::string AttributeSkywalkingParentSegmentID = "sw8.parent_segment_id";
+static std::string AttributeNetworkAddressUsedAtPeer  = "network.AddressUsedAtPeer";
+static std::string AttributePeer = "sw8.peer";
+static std::string AttributeComponentId = "sw8.componentId";
+static std::string AttributeLayer = "sw8.layer";
+}
+
+namespace Topology {
+static std::string UserEndpointName = "User";
+
+enum DetectPoint {
+    SERVER = 0,
+    CLIENT = 1,
+    PROXY = 2,
+    UNRECOGNIZED = 3
+};
 }
 }
 

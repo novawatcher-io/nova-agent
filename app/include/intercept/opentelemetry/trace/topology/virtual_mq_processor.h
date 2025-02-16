@@ -1,0 +1,8 @@
+//
+// Created by zhanglei on 2025/2/16.
+//
+
+#ifndef NOVA_AGENT_VIRTUAL_MQ_PROCESSOR_H
+#define NOVA_AGENT_VIRTUAL_MQ_PROCESSOR_H
+
+#endif //NOVA_AGENT_VIRTUAL_MQ_PROCESSOR_H

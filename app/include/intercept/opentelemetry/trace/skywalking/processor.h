@@ -4,7 +4,7 @@
 #include "const.h"
 #include "opentelemetry/sdk/trace/recordable.h"
 #include "skyrecordable.h"
-#include "skywalking-data-collect-protocol/language-agent/Tracing.grpc.pb.h"
+#include <skywalking-data-collect-protocol/language-agent/Tracing.grpc.pb.h>
 #include <prometheus/counter.h>
 
 using namespace App::Common::Opentelemetry;

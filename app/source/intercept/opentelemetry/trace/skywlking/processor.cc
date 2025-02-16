@@ -1,4 +1,6 @@
 #include "app/include/intercept/opentelemetry/trace/skywalking/processor.h"
+
+#include "app/include/common/const.h"
 #include "app/include/intercept/opentelemetry/trace/skywalking/skyresource.h"
 #include "app/include/intercept/opentelemetry/trace/skywalking/skywalkingproto_to_traces_util.h"
 #include <opentelemetry-proto/opentelemetry/proto/collector/trace/v1/trace_service.grpc.pb.h>
@@ -6,6 +8,7 @@
 
 using namespace App::Intercept::Opentelemetry::Trace::Skywalking;
 using namespace App::Common::Opentelemetry;
+using namespace App::Common::Trace::Skywalking;
 
 Core::Component::Result Processor::intercept(std::unique_ptr<Core::Component::Batch>& batch) {
     SPDLOG_DEBUG("Entering Processor::intercept with batch size: {}", batch->events().size());
@@ -123,6 +126,7 @@ std::vector<std::unique_ptr<OtlpEventData>> Processor::process(std::unique_ptr<C
         recordable->SetAttribute(AttributeSkywalkingParentSpanID, span.parentspanid());
         recordable->SetAttribute(AttributePeer, span.peer());
         recordable->SetAttribute(AttributeComponentId, span.componentid());
+        recordable->SetAttribute(AttributeLayer, span.spanlayer());
         if (!authentication.empty()) {
             recordable->SetAttribute("token", authentication);
         }
@@ -250,7 +254,7 @@ void Processor::swReferencesToSpanLinks(const skywalking::v3::SpanObject* span,
             },
             {
                 AttributeParentEndpoint,
-                ref.parentspanid(),
+                ref.parentendpoint(),
             },
             {
                 AttributeNetworkAddressUsedAtPeer,
