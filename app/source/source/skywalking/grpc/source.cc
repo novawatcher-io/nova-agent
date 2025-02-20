@@ -48,7 +48,7 @@ void Source::start() {
     std::unique_ptr<Core::Component::Interceptor> traceProcess = std::make_unique<Intercept::Opentelemetry::Trace::Skywalking::Processor>(*exposer_);
     tracePipeline->addIntercept(traceProcess);
     // 构建服务拓扑
-    std::unique_ptr<Core::Component::Interceptor> topoProcess = std::make_unique<Intercept::Opentelemetry::Trace::Topology::Processor>();
+    std::unique_ptr<Core::Component::Interceptor> topoProcess = std::make_unique<Intercept::Opentelemetry::Trace::Topology::Processor>(config_);
     tracePipeline->addIntercept(topoProcess);
     std::shared_ptr<Core::Component::Queue> queue = channel;
     tracePipeline->bindChannel(queue);
@@ -82,14 +82,6 @@ void Source::start() {
     builder.RegisterService(meterReportService.get());
     builder.RegisterService(managementService.get());
 
-    auto countDownLatch = std::make_unique<Core::OS::UnixCountDownLatch>(1);
-    channelThread->addInitCallable([&countDownLatch, this] {
-        countDownLatch->down();
-        channel->run();
-    });
-    channelThread->start();
-    countDownLatch->wait();
-
     server_ = builder.BuildAndStart();
     server_->Wait();
 }
@@ -97,7 +89,6 @@ void Source::start() {
 void Source::stop() {
     server_->Shutdown();
     channel->stop();
-    channelThread->stop();
 }
 
 void Source::finish(){

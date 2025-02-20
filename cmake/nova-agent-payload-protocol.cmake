@@ -2,7 +2,7 @@ set(NODE_PROTO_PATH "${PROJECT_SOURCE_DIR}/third_party/nova-agent-payload")
 set(NODE_GENERATED_PROTOBUF_PATH "${CMAKE_BINARY_DIR}/generated/third_party/nova_agent_payload")
 file(MAKE_DIRECTORY ${NODE_GENERATED_PROTOBUF_PATH})
 
-add_library(node_data_collect_protocol_proto OBJECT "${NODE_PROTO_PATH}/node/v1/info.proto")
+add_library(node_data_collect_protocol_proto OBJECT "${NODE_PROTO_PATH}/node/v1/info.proto" "${NODE_PROTO_PATH}/trace/v1/topology.proto")
 
 target_link_libraries(node_data_collect_protocol_proto PUBLIC protobuf::libprotobuf gRPC::grpc++)
 

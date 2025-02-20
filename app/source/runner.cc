@@ -91,11 +91,12 @@ void Runner::run() {
         return;
     }
 
+    App::Source::SkyWalking::Grpc::Source* source = nullptr;
     if (config_->GetConfig().has_trace_server_config() && config_->GetConfig().trace_server_config().enable()) {
         // 调用链stream
         // 启动source
+        source = new App::Source::SkyWalking::Grpc::Source(config_, exposer);
         sourceThread->addInitCallable([&] {
-            auto source = new App::Source::SkyWalking::Grpc::Source(config_, exposer);
             source->start();
             delete source;
         });
@@ -134,6 +135,9 @@ void Runner::run() {
     SPDLOG_INFO("main loop stopped, start to shutdown...");
     //    manager->shutdown();
     if (config_->GetConfig().has_trace_server_config() && config_->GetConfig().trace_server_config().enable()) {
+        SPDLOG_INFO("trace server start to shutdown...");
+        source->stop();
+        SPDLOG_DEBUG("source thread start to shutdown...");
         sourceThread->stop();
         SPDLOG_DEBUG("source thread stopped");
         grpcChannelThread->stop();

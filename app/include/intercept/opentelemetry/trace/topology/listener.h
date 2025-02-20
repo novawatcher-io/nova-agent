@@ -11,10 +11,15 @@
 namespace App::Intercept::Opentelemetry::Trace::Topology {
 class Listener {
 public:
-     virtual void parseEntry(const opentelemetry::proto::trace::v1::Span& span, const App::Common::Opentelemetry::Recordable* recordable) PURE;
+     virtual void parseEntry(const opentelemetry::proto::trace::v1::Span& span, const App::Common::Opentelemetry::Recordable* recordable,
+                             const std::unordered_map<std::string, ::opentelemetry::proto::common::v1::AnyValue>& attr) PURE;
 
-     virtual void parseExit(const opentelemetry::proto::trace::v1::Span& span, const App::Common::Opentelemetry::Recordable* recordable) PURE;
+     virtual void parseExit(const opentelemetry::proto::trace::v1::Span& span, const App::Common::Opentelemetry::Recordable* recordable,
+                            const std::unordered_map<std::string, ::opentelemetry::proto::common::v1::AnyValue>& attr) PURE;
 
-     virtual void parseLocal(const opentelemetry::proto::trace::v1::Span& span, const App::Common::Opentelemetry::Recordable* recordable) PURE;
+     virtual void parseLocal(const opentelemetry::proto::trace::v1::Span& span, const App::Common::Opentelemetry::Recordable* recordable,
+                             const std::unordered_map<std::string, ::opentelemetry::proto::common::v1::AnyValue>& attr) PURE;
+
+     virtual void build() PURE;
 };
 }

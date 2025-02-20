@@ -36,8 +36,7 @@ namespace App::Source::SkyWalking::Grpc {
 class Source : public Core::Component::Component {
 public:
     Source(std::shared_ptr<App::Config::ConfigReader> config, std::unique_ptr<App::Prometheus::PrometheusExposer>& exposer)
-    : exposer_(exposer) {
-        channelThread = std::make_shared<App::Common::BaseThread>();
+    : exposer_(exposer), config_(config) {
     }
 
     std::string name() override {
@@ -71,7 +70,7 @@ private:
     std::unique_ptr<Callback::MeterReportServer> meterReportService;
     std::unique_ptr<Callback::ManagementServer> managementService;
     std::unique_ptr<Callback::TraceServer> traceServer;
-    std::shared_ptr<App::Common::BaseThread> channelThread;
     std::unique_ptr<App::Prometheus::PrometheusExposer>& exposer_;
+    std::shared_ptr<App::Config::ConfigReader> config_;
 };
 } // namespace App::Source::SkyWalking::Grpc

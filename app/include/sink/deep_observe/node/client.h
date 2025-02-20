@@ -1,6 +1,6 @@
 #pragma once
 #include "app/include/common/grpc/grpc_client_options.h"
-#include "nova_agent_payload/node/v1/info.grpc.pb.h"
+#include <nova_agent_payload/node/v1/info.grpc.pb.h>
 #include <memory>
 
 namespace novaagent::node::v1 {
