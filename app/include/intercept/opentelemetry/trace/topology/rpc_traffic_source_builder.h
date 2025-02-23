@@ -40,11 +40,11 @@ public:
     std::unique_ptr<novaagent::trace::v1::Service> toService() {
         std::unique_ptr<novaagent::trace::v1::Service> service = std::make_unique<novaagent::trace::v1::Service>();
         Core::Common::XXHash64 hashUtil(0);
-        std::string key = destServiceName + destServiceInstanceName + std::to_string(destLayer);
+        std::string key = destServiceName + std::to_string(destLayer);
         hashUtil.add(key.data(), key.length());
         service->set_id(hashUtil.hash());
         service->set_name(destServiceName);
-        service->set_serviceinstancename(destServiceInstanceName);
+//        service->set_serviceinstancename(destServiceInstanceName);
         service->set_type(std::to_string(type));
         return service;
     }
@@ -63,17 +63,17 @@ public:
         uint64_t sourceServiceId = 0;
         relation->set_sourcelayer(sourceLayer);
         relation->set_sourceservicename(sourceServiceName);
-        relation->set_sourceserviceinstancename(sourceServiceInstanceName);
+//        relation->set_sourceserviceinstancename(sourceServiceInstanceName);
         relation->set_destservicename(destServiceName);
-        relation->set_destserviceinstancename(destServiceInstanceName);
+//        relation->set_destserviceinstancename(destServiceInstanceName);
         relation->set_destlayer(destLayer);
         if (!sourceServiceName.empty()) {
-            sourceServiceId = makeHashId(destServiceName + destServiceInstanceName + std::to_string(destLayer));
+            sourceServiceId = makeHashId(sourceServiceName + std::to_string(sourceLayer));
         }
         relation->set_sourceserviceid(sourceServiceId);
         uint64_t destServiceId = 0;
         if (!destServiceName.empty()) {
-            destServiceId = makeHashId(destServiceName + destServiceInstanceName + std::to_string(destLayer));
+            destServiceId = makeHashId(destServiceName + std::to_string(destLayer));
             relation->set_destserviceid(destServiceId);
         } else {
             relation->set_destserviceid(0);

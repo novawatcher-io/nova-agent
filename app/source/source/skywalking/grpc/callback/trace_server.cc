@@ -22,6 +22,7 @@ using namespace ::skywalking::v3;
         if (!object.IsInitialized()) {
             continue;
         }
+        std::cout << object.DebugString() << std::endl;
 
         std::unique_ptr<SegmentObject> save_data = std::make_unique<SegmentObject>();
         save_data->CopyFrom(object);

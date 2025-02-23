@@ -203,20 +203,19 @@ void RPCAnalysisListener::parseLocal(const opentelemetry::proto::trace::v1::Span
 void RPCAnalysisListener::build() {
     for (auto& source : callingInTraffic) {
         auto service = source->toService();
-        std::cout << service->DebugString() << std::endl;
         auto exist = inLruCache->exists(service->id());
         inLruCache->put(service->id(), true);
-//        if (exist) {
-//            continue;
-//        }
+        if (exist) {
+            continue;
+        }
         sink_->registerService(*service);
         auto relation = source->toServiceRelation();
         std::cout << relation->DebugString() << std::endl;
         inLruCache->put(relation->id(), true);
         exist = inLruCache->exists(service->id());
-//        if (exist) {
-//            continue;
-//        }
+        if (exist) {
+            continue;
+        }
         sink_->registerServiceRelation(*relation);
         continue;
     }
@@ -229,6 +228,7 @@ void RPCAnalysisListener::build() {
         if (exist) {
             continue;
         }
+        sink_->registerServiceRelation(*relation);
     }
     callingOutTraffic.clear();
 }
