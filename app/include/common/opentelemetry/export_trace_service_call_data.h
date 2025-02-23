@@ -3,98 +3,55 @@
 //
 
 #pragma once
-#include "app/include/api/call_data.h"
+#include <google/protobuf/arena.h>
 #include <opentelemetry/proto/collector/trace/v1/trace_service.grpc.pb.h>
 
 using namespace opentelemetry::proto::collector::trace::v1;
 namespace App {
 namespace Common {
 namespace OpenTelemetry {
-template <class Response> class ExportTraceServiceCallData : public Api::CallData {
+template <typename RequestType, typename ResponseType>
+class ExportTraceServiceCallData : public grpc::ClientUnaryReactor {
 public:
-    using AsyncCallable = bool (*)(ExportTraceServiceCallData*);
+    grpc::Status status;
+    grpc::ClientContext context;
+    RequestType request{};
+    ResponseType response{};
+//    using AsyncCallable = std::function<void(const grpc::Status&, const ResponseType&)>;
 
-    explicit ExportTraceServiceCallData(grpc::CompletionQueue* cq) : cq_(cq) {
-        Proceed();
-    }
-
-    void onCreate() final {
-    }
-
-    void onProcess() final {
-        callable(status);
-        delete this;
-    }
-
-    void onFinish() final {
+    ExportTraceServiceCallData()  {
+        context.set_deadline(std::chrono::system_clock::now() + std::chrono::seconds(5));
     }
 
     grpc::ClientContext& getContext() {
         return context;
     }
 
-    void setResponseReader(std::unique_ptr<grpc::ClientAsyncResponseReader<Response>> response_reader_) {
-        response_reader = std::move(response_reader_);
-    }
 
-    void startCall() {
-        response_reader->StartCall();
-    }
-
-    void finishCall() {
-        response_reader->Finish(&reply, &status, (void*)this);
-    }
-
-    void setCallable(std::function<void(grpc::Status)> callable_) {
+    void setCallable(std::function<void(const grpc::Status&, const ResponseType&)> callable_) {
         callable = std::move(callable_);
     }
 
-    void setArena(std::unique_ptr<google::protobuf::Arena>&& arena_) {
-        arena.swap(arena_);
-    }
-
-    AsyncCallable getAsyncCallback() {
+    std::function<void(const grpc::Status&, const ResponseType&)> getAsyncCallback() {
         return grpc_async_callback;
     }
 
-    grpc::Status& getStatus() {
-        return status;
-    }
-
-    std::unique_ptr<google::protobuf::Arena>& getArena() {
-        return arena;
-    }
-
-    void setAsyncCallable(AsyncCallable grpc_async_callback_) {
+    void setAsyncCallable(std::function<void(const grpc::Status&, const ResponseType&)> grpc_async_callback_) {
         grpc_async_callback = grpc_async_callback_;
+    }
+
+    void OnDone(const grpc::Status& s) override {
+        if (callable) {
+            callable(s, response);
+        }
     }
 
     ~ExportTraceServiceCallData() override {
     }
 
 private:
-    // Storage for the status of the RPC upon completion.
-    grpc::Status status;
-
-    AsyncCallable grpc_async_callback = nullptr;
-    // Container for the data we expect from the server.
-    Response reply;
-
-    // Context for the client. It could be used to convey extra information to
-    // the server and/or tweak certain RPC behaviors.
-    grpc::ClientContext context;
-
-    std::unique_ptr<grpc::ClientAsyncResponseReader<Response>> response_reader;
-    // The means of communication with the gRPC runtime for an asynchronous
-    // server.
-    // The producer-consumer queue where for asynchronous server notifications.
-    grpc::CompletionQueue* cq_;
-
-    std::unique_ptr<TraceService::Stub> stub_;
-
-    std::function<void(grpc::Status)> callable;
-
-    std::unique_ptr<google::protobuf::Arena> arena;
+    std::function<void(const grpc::Status&, const ResponseType&)> grpc_async_callback = nullptr;
+    std::function<void(const grpc::Status&, const ResponseType&)> callable;
 };
 } // namespace OpenTelemetry
 } // namespace Common

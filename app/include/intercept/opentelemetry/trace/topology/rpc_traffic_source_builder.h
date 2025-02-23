@@ -74,6 +74,8 @@ public:
         uint64_t destServiceId = 0;
         if (!destServiceName.empty()) {
             destServiceId = makeHashId(destServiceName + destServiceInstanceName + std::to_string(destLayer));
+            relation->set_destserviceid(destServiceId);
+        } else {
             relation->set_destserviceid(0);
         }
         relation->set_id(makeHashId(std::to_string(sourceServiceId) + std::to_string(destServiceId)));

@@ -33,6 +33,9 @@ public:
         return false;
     };
 
+    void stop() final {
+    }
+
     Result Consume(Batch&) {
         return {};
     };

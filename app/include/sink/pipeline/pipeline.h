@@ -21,6 +21,8 @@ public:
 
     void push(std::unique_ptr<Core::Component::EventData> e) final;
 
+    void stop() final;
+
     void flush() final;
 private:
     std::vector<std::unique_ptr<Core::Component::Consumer>> consumers;

@@ -50,6 +50,10 @@ public:
         return true;
     }
 
+    void stop() final {
+        client->Shutdown();
+    }
+
 private:
     std::shared_ptr<Core::Component::Queue> queue;
     std::unique_ptr<LogsService::Stub> logs_service_stub_;

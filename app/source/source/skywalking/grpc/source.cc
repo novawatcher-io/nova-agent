@@ -43,6 +43,8 @@ void Source::start() {
     // Finally assemble the server.
     channel = std::make_shared<Sink::Channel::GrpcChannel>(cq_);
 
+    std::unique_ptr<Core::Component::Pipeline> tracePipeline;
+    tracePipelinePtr = tracePipeline.get();
     // 构建pipeline
     tracePipeline = std::make_unique<App::Sink::Pipeline::Pipeline>();
     std::unique_ptr<Core::Component::Interceptor> traceProcess = std::make_unique<Intercept::Opentelemetry::Trace::Skywalking::Processor>(*exposer_);
@@ -82,13 +84,28 @@ void Source::start() {
     builder.RegisterService(meterReportService.get());
     builder.RegisterService(managementService.get());
 
+    auto countDownLatch = std::make_unique<Core::OS::UnixCountDownLatch>(1);
+    channelThread->addInitCallable([&countDownLatch, this] {
+        countDownLatch->down();
+        channel->run();
+    });
+    channelThread->start();
+    countDownLatch->wait();
     server_ = builder.BuildAndStart();
     server_->Wait();
+    SPDLOG_INFO("server finish shutdown...");
 }
 
 void Source::stop() {
+    SPDLOG_INFO("trace pipeline start to shutdown...");
+    if (tracePipelinePtr != nullptr) {
+        tracePipelinePtr->stop();
+    }
+    SPDLOG_INFO("source server start to shutdown...");
     server_->Shutdown();
+    SPDLOG_INFO("channel start to shutdown...");
     channel->stop();
+    channelThread->stop();
 }
 
 void Source::finish(){

@@ -40,3 +40,12 @@ void Pipeline::flush() {
         consumers[i]->Consume(*batch_);
     }
 }
+
+void Pipeline::stop() {
+    if (consumers.empty()) {
+        return;
+    }
+    for (auto i = 0; i < consumers.size(); i++) {
+        consumers[i]->stop();
+    }
+}

@@ -98,7 +98,7 @@ void Runner::run() {
         source = new App::Source::SkyWalking::Grpc::Source(config_, exposer);
         sourceThread->addInitCallable([&] {
             source->start();
-            delete source;
+            SPDLOG_INFO("source thread finish to shutdown...");
         });
         sourceThread->start();
     }
@@ -139,9 +139,8 @@ void Runner::run() {
         source->stop();
         SPDLOG_DEBUG("source thread start to shutdown...");
         sourceThread->stop();
+        delete source;
         SPDLOG_DEBUG("source thread stopped");
-        grpcChannelThread->stop();
-        SPDLOG_DEBUG("grpc channel thread stopped");
     }
 
     if (config_->GetConfig().has_host_collect_config() && config_->GetConfig().host_collect_config().enable()) {

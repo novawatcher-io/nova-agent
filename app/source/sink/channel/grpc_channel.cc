@@ -26,7 +26,9 @@ void GrpcChannel::run() {
         // The return value of Next should always be checked. This return value
         // tells us whether there is any kind of event or cq_ is shutting down.
         //        GPR_ASSERT(cq_->AsyncNext(&tag, &ok,  gpr_time_from_seconds(5,GPR_TIMESPAN)));
-        GPR_ASSERT(cq_->Next(&tag, &ok));
+        if (!cq_->Next(&tag, &ok)) {
+            break;
+        }
         flush();
 
         if (ok) {

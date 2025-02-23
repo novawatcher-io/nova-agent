@@ -39,7 +39,7 @@ Core::Component::Result Sink::Consume(Core::Component::Batch& batch) {
     }
 
     client->Export(metric_service_stub_, std::move(*request), std::move(arena),
-                   [](Common::OpenTelemetry::ExportTraceServiceCallData<ExportMetricsServiceResponse>*) -> bool {
+                   [](const grpc::Status&, const ExportMetricsServiceResponse&) -> bool {
                        return true;
                    });
 

@@ -20,7 +20,7 @@ using namespace opentelemetry;
 namespace App {
 namespace Common {
 namespace Opentelemetry {
-
+using namespace opentelemetry::proto::collector::metrics::v1;
 class OtlpGrpcClient {
 public:
     OtlpGrpcClient(std::shared_ptr<OtlpGrpcClientOptions>& options, grpc::CompletionQueue* cq);
@@ -52,26 +52,17 @@ public:
     static std::unique_ptr<proto::collector::logs::v1::LogsService::Stub>
     MakeLogsServiceStub(const OtlpGrpcClientOptions& options);
 
-    sdk::common::ExportResult
-    Export(std::unique_ptr<proto::collector::trace::v1::TraceService::Stub>& stub,
-           proto::collector::trace::v1::ExportTraceServiceRequest&& request,
-           std::unique_ptr<google::protobuf::Arena>&& arena,
-           OpenTelemetry::ExportTraceServiceCallData<
-               proto::collector::trace::v1::ExportTraceServiceResponse>::AsyncCallable asyncCallable);
-
-    sdk::common::ExportResult
-    Export(std::unique_ptr<proto::collector::metrics::v1::MetricsService::Stub>& stub,
-           proto::collector::metrics::v1::ExportMetricsServiceRequest&& request,
-           std::unique_ptr<google::protobuf::Arena>&& arena,
-           OpenTelemetry::ExportTraceServiceCallData<
-               proto::collector::metrics::v1::ExportMetricsServiceResponse>::AsyncCallable asyncCallable);
+    sdk::common::ExportResult Export(
+    std::unique_ptr<TraceService::Stub>& stub, ExportTraceServiceRequest&& request,
+        std::unique_ptr<google::protobuf::Arena>&& arena,
+        std::function<void(const grpc::Status&, const ExportTraceServiceResponse&)> asyncCallable);
 
     sdk::common::ExportResult Export(
-        std::unique_ptr<proto::collector::logs::v1::LogsService::Stub>& stub,
-        proto::collector::logs::v1::ExportLogsServiceRequest&& request,
+    std::unique_ptr<MetricsService::Stub>& stub, proto::collector::metrics::v1::ExportMetricsServiceRequest&& request,
         std::unique_ptr<google::protobuf::Arena>&& arena,
-        OpenTelemetry::ExportTraceServiceCallData<proto::collector::logs::v1::ExportLogsServiceResponse>::AsyncCallable
-            asyncCallable);
+        std::function<void(const grpc::Status&, const proto::collector::metrics::v1::ExportMetricsServiceResponse&)> asyncCallable) {
+        return opentelemetry::sdk::common::ExportResult::kSuccess;
+    }
 
     /**
      * Force flush the gRPC client.

@@ -57,6 +57,10 @@ public:
         return {};
     }
 
+    void stop() final {
+        client->Shutdown();
+    }
+
     Core::Component::Result Consume(Core::Component::Batch& batch);
 
 private:

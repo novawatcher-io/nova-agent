@@ -298,27 +298,27 @@ std::shared_ptr<OtlpGrpcClientAsyncData> OtlpGrpcClient::checkRunStatus() {
     return async_data;
 }
 
-sdk::common::ExportResult OtlpGrpcClient::Export(
+sdk::common::ExportResult OtlpGrpcClient:: Export(
     std::unique_ptr<TraceService::Stub>& stub, ExportTraceServiceRequest&& request,
-    std::unique_ptr<google::protobuf::Arena>&& arena,
-    OpenTelemetry::ExportTraceServiceCallData<ExportTraceServiceResponse>::AsyncCallable asyncCallable) {
+        std::unique_ptr<google::protobuf::Arena>&& arena,
+        std::function<void(const grpc::Status&, const ExportTraceServiceResponse&)> asyncCallable) {
     auto async_data = checkRunStatus();
     if (!async_data) {
         return opentelemetry::sdk::common::ExportResult::kFailure;
     }
 
-    auto asyncCall = new OpenTelemetry::ExportTraceServiceCallData<ExportTraceServiceResponse>(cq_);
+    auto asyncCall = new OpenTelemetry::ExportTraceServiceCallData<ExportTraceServiceRequest, ExportTraceServiceResponse>();
     ++async_data->start_request_counter;
     ++async_data->running_requests;
-    asyncCall->setArena(std::move(arena));
-    asyncCall->setAsyncCallable(asyncCallable);
-    asyncCall->setCallable([async_data, asyncCall](const grpc::Status&) {
+    asyncCall->setAsyncCallable(std::move(asyncCallable));
+    asyncCall->setCallable([async_data, asyncCall](const grpc::Status& status, const ExportTraceServiceResponse& res) {
         --async_data->running_requests;
         ++async_data->finished_request_counter;
 
         if (auto func = asyncCall->getAsyncCallback(); func != nullptr) {
-            func(asyncCall);
+            func(status, res);
         }
+        delete asyncCall;
         return;
     });
 
@@ -326,85 +326,12 @@ sdk::common::ExportResult OtlpGrpcClient::Export(
     // an instance to store in "call" but does not actually start the RPC
     // Because we are using the asynchronous API, we need to hold on to
     // the "call" instance in order to get updates on the ongoing RPC.
-    auto requestData =
-        google::protobuf::Arena::Create<ExportTraceServiceRequest>(asyncCall->getArena().get(), std::move(request));
-    asyncCall->setResponseReader(stub->PrepareAsyncExport(&asyncCall->getContext(), *requestData, cq_));
-    asyncCall->startCall();
-    asyncCall->finishCall();
+    asyncCall->request.Swap(&request);
+    stub->async()->Export(&asyncCall->context, &asyncCall->request, &asyncCall->response, asyncCall);
+    asyncCall->StartCall();
     return opentelemetry::sdk::common::ExportResult::kSuccess;
 }
 
-sdk::common::ExportResult OtlpGrpcClient::Export(
-    std::unique_ptr<MetricsService::Stub>& stub, ExportMetricsServiceRequest&& request,
-    std::unique_ptr<google::protobuf::Arena>&& arena,
-    OpenTelemetry::ExportTraceServiceCallData<ExportMetricsServiceResponse>::AsyncCallable asyncCallable) {
-    auto async_data = checkRunStatus();
-    if (!async_data) {
-        return opentelemetry::sdk::common::ExportResult::kFailure;
-    }
-
-    auto asyncCall = new OpenTelemetry::ExportTraceServiceCallData<ExportMetricsServiceResponse>(cq_);
-    ++async_data->start_request_counter;
-    ++async_data->running_requests;
-    asyncCall->setArena(std::move(arena));
-    asyncCall->setAsyncCallable(asyncCallable);
-    asyncCall->setCallable([async_data, asyncCall](const grpc::Status& ) {
-        --async_data->running_requests;
-        ++async_data->finished_request_counter;
-
-        if (auto func = asyncCall->getAsyncCallback(); func != nullptr) {
-            func(asyncCall);
-        }
-        return;
-    });
-
-    // stub_->PrepareAsyncSayHello() creates an RPC object, returning
-    // an instance to store in "call" but does not actually start the RPC
-    // Because we are using the asynchronous API, we need to hold on to
-    // the "call" instance in order to get updates on the ongoing RPC.
-    auto requestData =
-        google::protobuf::Arena::Create<ExportMetricsServiceRequest>(asyncCall->getArena().get(), std::move(request));
-    asyncCall->setResponseReader(stub->PrepareAsyncExport(&asyncCall->getContext(), *requestData, cq_));
-    asyncCall->startCall();
-    asyncCall->finishCall();
-    return opentelemetry::sdk::common::ExportResult::kSuccess;
-}
-
-sdk::common::ExportResult OtlpGrpcClient::Export(
-    std::unique_ptr<LogsService::Stub>& stub, ExportLogsServiceRequest&& request,
-    std::unique_ptr<google::protobuf::Arena>&& arena,
-    OpenTelemetry::ExportTraceServiceCallData<ExportLogsServiceResponse>::AsyncCallable asyncCallable) {
-    auto async_data = checkRunStatus();
-    if (!async_data) {
-        return opentelemetry::sdk::common::ExportResult::kFailure;
-    }
-
-    auto asyncCall = new OpenTelemetry::ExportTraceServiceCallData<ExportLogsServiceResponse>(cq_);
-    ++async_data->start_request_counter;
-    ++async_data->running_requests;
-    asyncCall->setArena(std::move(arena));
-    asyncCall->setAsyncCallable(asyncCallable);
-    asyncCall->setCallable([async_data, asyncCall](const grpc::Status&) {
-        --async_data->running_requests;
-        ++async_data->finished_request_counter;
-
-        if (auto func = asyncCall->getAsyncCallback(); func != nullptr) {
-            func(asyncCall);
-        }
-        return;
-    });
-
-    // stub_->PrepareAsyncSayHello() creates an RPC object, returning
-    // an instance to store in "call" but does not actually start the RPC
-    // Because we are using the asynchronous API, we need to hold on to
-    // the "call" instance in order to get updates on the ongoing RPC.
-    auto requestData =
-        google::protobuf::Arena::Create<ExportLogsServiceRequest>(asyncCall->getArena().get(), std::move(request));
-    asyncCall->setResponseReader(stub->PrepareAsyncExport(&asyncCall->getContext(), *requestData, cq_));
-    asyncCall->startCall();
-    asyncCall->finishCall();
-    return opentelemetry::sdk::common::ExportResult::kSuccess;
-}
 } // namespace Opentelemetry
 } // namespace Common
 } // namespace App

@@ -13,7 +13,6 @@ public:
     Runner(std::shared_ptr<App::Config::ConfigReader> config)
         : loop(std::make_unique<Core::Event::EventLoop>()),
           sourceThread(std::make_shared<App::Common::BaseThread>()),
-          grpcChannelThread(std::make_shared<App::Common::BaseThread>()),
           cq(std::make_unique<grpc::CompletionQueue>()),
           config_(config) {
     }
@@ -35,8 +34,6 @@ private:
     std::shared_ptr<Core::Component::Container> manager;
 
     std::shared_ptr<App::Common::BaseThread> sourceThread;
-
-    std::shared_ptr<App::Common::BaseThread> grpcChannelThread;
 
     // The producer-consumer queue we use to communicate asynchronously with the
     // gRPC runtime.

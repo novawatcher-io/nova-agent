@@ -39,9 +39,8 @@ Core::Component::Result Sink::Consume(Core::Component::Batch& batch) {
     ExportTraceServiceRequest* request = google::protobuf::Arena::Create<ExportTraceServiceRequest>(arena.get());
     Common::Opentelemetry::OtlpRecordableUtils::PopulateRequest(spans, request);
     SPDLOG_INFO("sink request: {}", request->ShortDebugString());
-
     client->Export(trace_service_stub_, std::move(*request), std::move(arena),
-                   [](Common::OpenTelemetry::ExportTraceServiceCallData<ExportTraceServiceResponse>*) -> bool {
+                   [](const grpc::Status&, const ExportTraceServiceResponse&) -> bool {
                        return true;
                    });
 
