@@ -21,5 +21,8 @@ public:
                              const std::unordered_map<std::string, ::opentelemetry::proto::common::v1::AnyValue>& attr) PURE;
 
      virtual void build() PURE;
+
+     virtual ~Listener() {
+     };
 };
 }

@@ -20,6 +20,8 @@ public:
                     const std::unordered_map<std::string, ::opentelemetry::proto::common::v1::AnyValue>& attr) final;
 
     void build() final;
+
+    virtual ~NetworkAddressAliasMappingListener() {}
 private:
     bool enabled = false;
 };

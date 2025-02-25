@@ -1,5 +1,7 @@
 #include "app/include/runner.h"
 
+#include <csignal>
+
 #include <opentelemetry/exporters/otlp/otlp_grpc_metric_exporter_factory.h>
 #include <opentelemetry/exporters/otlp/otlp_grpc_metric_exporter_options.h>
 #include <opentelemetry/metrics/provider.h>
@@ -9,15 +11,16 @@
 #include <opentelemetry/sdk/metrics/view/view_registry_factory.h>
 #include <os/unix_countdown_latch.h>
 #include <os/unix_thread.h>
+#include <component/thread_container.h>
+#include <spdlog/spdlog.h>
 
 #include "app/include/common/machine.h"
 #include "app/include/sink/channel/grpc_channel.h"
 #include "app/include/source/host/source.h"
 #include "app/include/source/skywalking/grpc/source.h"
 #include "app/include/source/http/source.h"
-#include <component/thread_container.h>
-#include <csignal>
-#include <spdlog/spdlog.h>
+#include "app/include/source/kubernetes/source.h"
+
 
 namespace App {
 namespace otlp_exporter = opentelemetry::exporter::otlp;
@@ -91,14 +94,17 @@ void Runner::run() {
         return;
     }
 
-    App::Source::SkyWalking::Grpc::Source* source = nullptr;
+    std::unique_ptr<App::Source::SkyWalking::Grpc::Source> source;
+    auto countDownLatch = std::make_unique<Core::OS::UnixCountDownLatch>(1);
     if (config_->GetConfig().has_trace_server_config() && config_->GetConfig().trace_server_config().enable()) {
         // 调用链stream
         // 启动source
-        source = new App::Source::SkyWalking::Grpc::Source(config_, exposer);
+        source = std::make_unique<App::Source::SkyWalking::Grpc::Source>(config_, exposer);
+        source->init();
         sourceThread->addInitCallable([&] {
             source->start();
             SPDLOG_INFO("source thread finish to shutdown...");
+            countDownLatch->down();
         });
         sourceThread->start();
     }
@@ -130,17 +136,21 @@ void Runner::run() {
         hostSource->start();
     }
 
+    std::unique_ptr<Source::Kubernetes::Source> kubernetesDiscovery = std::make_unique<Source::Kubernetes::Source>(config_);
+    kubernetesDiscovery->init();
+    kubernetesDiscovery->start();
 
     loop->loop();
+    kubernetesDiscovery->finish();
     SPDLOG_INFO("main loop stopped, start to shutdown...");
-    //    manager->shutdown();
+
     if (config_->GetConfig().has_trace_server_config() && config_->GetConfig().trace_server_config().enable()) {
         SPDLOG_INFO("trace server start to shutdown...");
         source->stop();
         SPDLOG_DEBUG("source thread start to shutdown...");
         sourceThread->stop();
-        delete source;
         SPDLOG_DEBUG("source thread stopped");
+        countDownLatch->wait();
     }
 
     if (config_->GetConfig().has_host_collect_config() && config_->GetConfig().host_collect_config().enable()) {
@@ -153,6 +163,7 @@ void Runner::run() {
     if (config_->GetConfig().has_http_server_config() && config_->GetConfig().http_server_config().enable()) {
         httpSource->stop();
     }
+    kubernetesDiscovery->stop();
     cleanupMetrics();
     threadManager->stop();
     SPDLOG_INFO("app stopped");

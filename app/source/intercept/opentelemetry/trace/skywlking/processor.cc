@@ -82,7 +82,7 @@ std::vector<std::unique_ptr<OtlpEventData>> Processor::process(std::unique_ptr<C
         // span_id
         auto span_id_ = std::array<uint8_t, 8>();
         nostd::span<uint8_t, 8> span_id(span_id_);
-        SPDLOG_INFO("tracesegmentid: {}, span.spanid: {}", object->tracesegmentid(), span.spanid());
+        SPDLOG_DEBUG("tracesegmentid: {}, span.spanid: {}", object->tracesegmentid(), span.spanid());
         trace::SpanId spanId(
             SkywalkingProtoToTracesUtil::segmentIDToSpanID(object->tracesegmentid(), span.spanid(), span_id));
         trace::SpanContext context(traceId, spanId, flags, false);
@@ -90,7 +90,7 @@ std::vector<std::unique_ptr<OtlpEventData>> Processor::process(std::unique_ptr<C
         // parent_span_id
         auto parent_span_id_ = std::array<uint8_t, 8>();
         nostd::span<uint8_t, 8> parent_span_id(parent_span_id_);
-        SPDLOG_INFO("refs size: {}", span.refs_size());
+        SPDLOG_DEBUG("refs size: {}", span.refs_size());
         // SPDLOG_INFO("span detail: {}", span.ShortDebugString());
         std::unique_ptr<trace::SpanId> parentSpanIdPtr;
         if (span.parentspanid() != -1) {

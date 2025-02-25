@@ -210,7 +210,6 @@ void RPCAnalysisListener::build() {
         }
         sink_->registerService(*service);
         auto relation = source->toServiceRelation();
-        std::cout << relation->DebugString() << std::endl;
         inLruCache->put(relation->id(), true);
         exist = inLruCache->exists(service->id());
         if (exist) {

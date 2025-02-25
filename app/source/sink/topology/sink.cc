@@ -35,6 +35,10 @@ struct AsyncUnaryCall : public grpc::ClientUnaryReactor {
             callback(s, response);
         }
     }
+
+    virtual ~AsyncUnaryCall() {
+
+    }
 };
 
 
@@ -56,8 +60,8 @@ void Sink::registerService(novaagent::trace::v1::Service& service) {
         if (!status.ok()) {
             SPDLOG_ERROR("registerService error: {}", status.error_message());
         }
-        delete (call);
         --running_requests;
+        delete (call);
     };
     call->request.Swap(&service);
     SPDLOG_DEBUG("registerService request: {}", call->request.ShortDebugString());
@@ -71,13 +75,13 @@ void Sink::registerServiceRelation(novaagent::trace::v1::ServiceRelation &relati
         return;
     }
     ++running_requests;
-    auto* call = new AsyncUnaryCall<novaagent::trace::v1::ServiceRelation, novaagent::trace::v1::TopologyRes>(options_.metadata);
+    auto call = new AsyncUnaryCall<novaagent::trace::v1::ServiceRelation, novaagent::trace::v1::TopologyRes>(options_.metadata);
     call->callback = [call, this](const grpc::Status& status, const TopologyRes& resp) {
+        --running_requests;
         if (!status.ok()) {
             SPDLOG_ERROR("registerServiceRelation error: {}", status.error_message());
         }
         delete (call);
-        --running_requests;
     };
     call->request.Swap(&relation);
     SPDLOG_DEBUG("registerServiceRelation request: {}", call->request.ShortDebugString());

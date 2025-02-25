@@ -28,6 +28,7 @@ setup_table() {
     LIB_OPTIONS["libxml2"]="-DBUILD_SHARED_LIBS=OFF -DLIBXML2_WITH_DEBUG=OFF -DLIBXML2_WITH_HTML=OFF -DLIBXML2_WITH_HTTP=OFF -DLIBXML2_WITH_PROGRAMS=OFF -DLIBXML2_WITH_PYTHON=OFF -DLIBXML2_WITH_PYTHON=OFF -DLIBXML2_WITH_TESTS=OFF"
     LIB_OPTIONS["civetweb"]="-DCIVETWEB_BUILD_TESTING=OFF -DCIVETWEB_ENABLE_SERVER_EXECUTABLE=OFF -DCIVETWEB_DISABLE_CACHING=OFF -DCIVETWEB_ENABLE_ASAN=OFF -DCIVETWEB_INSTALL_EXECUTABLE=OFF -DCMAKE_BUILD_TYPE=Release -DCIVETWEB_ENABLE_CXX=ON"
     LIB_OPTIONS["prometheus-cpp"]="-DBUILD_SHARED_LIBS=OFF -DENABLE_TESTING=OFF -DUSE_THIRDPARTY_LIBRARIES=OFF -DTHIRDPARTY_CIVETWEB_WITH_SSL=OFF -DENABLE_PUSH=OFF -DCMAKE_BUILD_TYPE=Release"
+    LIB_OPTIONS["kubernetes-client/kubernetes"]="-DCMAKE_C_FLAGS=-fPIC -DBUILD_SHARED_LIBS=OFF"
 
     LIB_FILES["abseil-cpp"]="libabsl_base.a"
     LIB_FILES["googletest"]="libgtest.a"
@@ -44,6 +45,8 @@ setup_table() {
     LIB_FILES["libxml2"]="libxml2.a"
     LIB_FILES["civetweb"]="libcivetweb.a"
     LIB_FILES["prometheus-cpp"]="libprometheus-cpp-core.a"
+    LIB_FILES["libyaml"]="libyaml.a"
+    LIB_FILES["kubernetes-client/kubernetes"]="libkubernetes.a"
 }
 
 format_print() {
@@ -145,6 +148,8 @@ build_all() {
     (build_target_with_cmake $BUILD_ROOT "libxml2")
     (build_target_with_cmake $BUILD_ROOT "civetweb")
     (build_target_with_cmake $BUILD_ROOT "prometheus-cpp")
+    (build_target_with_cmake $BUILD_ROOT "libyaml")
+    (build_target_with_cmake $BUILD_ROOT "kubernetes-client/kubernetes")
     (build_hwloc)
 }
 

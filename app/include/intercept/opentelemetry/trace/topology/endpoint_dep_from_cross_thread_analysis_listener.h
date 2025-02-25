@@ -23,6 +23,8 @@ public:
                     const std::unordered_map<std::string, ::opentelemetry::proto::common::v1::AnyValue>& attr) final;
 
     void build() final;
+
+    virtual ~EndpointDepFromCrossThreadAnalysisListener() {}
 private:
 
     void parseRefForEndpointDependency(const opentelemetry::proto::trace::v1::Span& span, const App::Common::Opentelemetry::Recordable* recordable,

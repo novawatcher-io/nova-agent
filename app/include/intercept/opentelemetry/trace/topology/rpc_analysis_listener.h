@@ -28,6 +28,9 @@ public:
 
     void build() final;
 
+    virtual ~RPCAnalysisListener() {
+    }
+
 private:
     void parseLogicEndpoints(const opentelemetry::proto::trace::v1::Span& span,
      const App::Common::Opentelemetry::Recordable* recordable,

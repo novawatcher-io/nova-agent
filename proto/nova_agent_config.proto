@@ -31,6 +31,11 @@ message HostCollectConfig {
   bool enable = 1;
 }
 
+message KubernetesDiscoveryConfig {
+  bool enable = 1;
+  string kube_config = 2;
+}
+
 message TraceAgentConfig {
   string cluster = 1;
   // report metadata
@@ -57,4 +62,6 @@ message TraceAgentConfig {
   bool close_stdout = 12;
   // http server config
   HttpServerConfig http_server_config = 13;
+  // http kubernetes discovery config
+  KubernetesDiscoveryConfig kubernetes_discovery_config = 14;
 }

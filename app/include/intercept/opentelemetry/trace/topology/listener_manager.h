@@ -10,13 +10,17 @@ namespace App::Intercept::Opentelemetry::Trace::Topology {
 
 class ListenerManager {
 public:
+    ListenerManager() = default;
+
     void add (std::unique_ptr<Listener> listener) {
-        listeners.emplace_back(std::move(listener));
+        listeners.push_back(std::move(listener));
     }
 
     std::list<std::unique_ptr<Listener>>& list() {
         return listeners;
     }
+
+    ~ListenerManager() = default;
 private:
     std::list<std::unique_ptr<Listener>> listeners;
 };

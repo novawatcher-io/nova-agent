@@ -27,9 +27,6 @@ using grpc::Server;
 using namespace App::Source::SkyWalking::Grpc;
 
 void Source::init() {
-}
-
-void Source::start() {
     const char* host = getenv("SOURCE_HOST");
     if (host == nullptr) {
         host = "0.0.0.0:11800";
@@ -40,34 +37,27 @@ void Source::start() {
     builder.AddListeningPort(address, grpc::InsecureServerCredentials());
     cq_ = builder.AddCompletionQueue();
 
-    // Finally assemble the server.
-    channel = std::make_shared<Sink::Channel::GrpcChannel>(cq_);
-
     std::unique_ptr<Core::Component::Pipeline> tracePipeline;
-    tracePipelinePtr = tracePipeline.get();
     // 构建pipeline
     tracePipeline = std::make_unique<App::Sink::Pipeline::Pipeline>();
+    tracePipelinePtr = tracePipeline.get();
     std::unique_ptr<Core::Component::Interceptor> traceProcess = std::make_unique<Intercept::Opentelemetry::Trace::Skywalking::Processor>(*exposer_);
     tracePipeline->addIntercept(traceProcess);
     // 构建服务拓扑
     std::unique_ptr<Core::Component::Interceptor> topoProcess = std::make_unique<Intercept::Opentelemetry::Trace::Topology::Processor>(config_);
     tracePipeline->addIntercept(topoProcess);
-    std::shared_ptr<Core::Component::Queue> queue = channel;
-    tracePipeline->bindChannel(queue);
     std::unique_ptr<Core::Component::Consumer> traceSink = std::make_unique<Sink::OpenTelemetry::Trace::Grpc::Sink>(cq_);
     tracePipeline->addConsumer(traceSink);
 
     metricPipeline = std::make_unique<App::Sink::Pipeline::Pipeline>();
     std::unique_ptr<Core::Component::Interceptor> metricProcess = std::make_unique<Intercept::Opentelemetry::Metric::Skywalking::Processor>();
     metricPipeline->addIntercept(metricProcess);
-    metricPipeline->bindChannel(queue);
     std::unique_ptr<Core::Component::Consumer> metricSink = std::make_unique<Sink::OpenTelemetry::Metric::Grpc::Sink>(cq_);
     metricPipeline->addConsumer(metricSink);
 
     logPipeline = std::make_unique<App::Sink::Pipeline::Pipeline>();
     std::unique_ptr<Core::Component::Interceptor> logProcess = std::make_unique<Intercept::Opentelemetry::Log::Skywalking::Processor>();
     logPipeline->addIntercept(logProcess);
-    logPipeline->bindChannel(queue);
     std::unique_ptr<Core::Component::Consumer> logSink = std::make_unique<Sink::OpenTelemetry::Log::Grpc::Sink>(cq_);
     logPipeline->addConsumer(logSink);
 
@@ -84,14 +74,11 @@ void Source::start() {
     builder.RegisterService(meterReportService.get());
     builder.RegisterService(managementService.get());
 
-    auto countDownLatch = std::make_unique<Core::OS::UnixCountDownLatch>(1);
-    channelThread->addInitCallable([&countDownLatch, this] {
-        countDownLatch->down();
-        channel->run();
-    });
-    channelThread->start();
-    countDownLatch->wait();
+
     server_ = builder.BuildAndStart();
+}
+
+void Source::start() {
     server_->Wait();
     SPDLOG_INFO("server finish shutdown...");
 }
@@ -102,10 +89,12 @@ void Source::stop() {
         tracePipelinePtr->stop();
     }
     SPDLOG_INFO("source server start to shutdown...");
-    server_->Shutdown();
+    if (server_) {
+        server_->Shutdown();
+    }
     SPDLOG_INFO("channel start to shutdown...");
-    channel->stop();
-    channelThread->stop();
+//    channel->stop();
+//    channelThread->stop();
 }
 
 void Source::finish(){

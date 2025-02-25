@@ -37,7 +37,6 @@ class Source : public Core::Component::Component {
 public:
     Source(std::shared_ptr<App::Config::ConfigReader> config, std::unique_ptr<App::Prometheus::PrometheusExposer>& exposer)
     : exposer_(exposer), config_(config) {
-        channelThread = std::make_shared<App::Common::BaseThread>();
     }
 
     std::string name() override {
@@ -56,10 +55,11 @@ public:
         return cq_;
     }
 
+    virtual ~Source() {};
+
 private:
     std::unique_ptr<grpc::Server> server_;
     std::unique_ptr<grpc::CompletionQueue> cq_;
-    std::shared_ptr<Sink::Channel::GrpcChannel> channel;
     std::unique_ptr<Core::Component::Pipeline> logPipeline;
     std::unique_ptr<Core::Component::Pipeline> metricPipeline;
     Core::Component::Pipeline* tracePipelinePtr = nullptr;
@@ -73,6 +73,5 @@ private:
     std::unique_ptr<Callback::TraceServer> traceServer;
     std::unique_ptr<App::Prometheus::PrometheusExposer>& exposer_;
     std::shared_ptr<App::Config::ConfigReader> config_;
-    std::shared_ptr<App::Common::BaseThread> channelThread;
 };
 } // namespace App::Source::SkyWalking::Grpc

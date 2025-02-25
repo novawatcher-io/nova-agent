@@ -213,7 +213,10 @@ target_link_libraries(
             nova_agent_config_proto
             cri_api_proto
             core
+            kubernetes
+            yaml
             uuid
+            curl
             stduuid
             absl::strings
             absl::base

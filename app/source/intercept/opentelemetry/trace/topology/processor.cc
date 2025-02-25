@@ -132,8 +132,8 @@ Processor::Processor(std::shared_ptr<App::Config::ConfigReader> config_) {
     sink = std::make_unique<Sink::Topology::Sink>(options);
     listenerManager = std::make_unique<ListenerManager>();
     listenerManager->add(std::make_unique<RPCAnalysisListener>(true, sink));
-    listenerManager->add(std::make_unique<EndpointDepFromCrossThreadAnalysisListener>(true));
-    listenerManager->add(std::make_unique<NetworkAddressAliasMappingListener>(false));
+//    listenerManager->add(std::make_unique<EndpointDepFromCrossThreadAnalysisListener>(true));
+//    listenerManager->add(std::make_unique<NetworkAddressAliasMappingListener>(false));
 };
 Core::Component::Result Processor::intercept(std::unique_ptr<Core::Component::Batch> &batch) {
     intercept(*batch);

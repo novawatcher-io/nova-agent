@@ -1,0 +1,38 @@
+//
+// Created by zhanglei on 2025/2/25.
+//
+
+#pragma once
+
+#include <memory>
+#include <vector>
+#include <map>
+
+#include <rapidjson/document.h>
+#include <rapidjson/pointer.h>
+
+namespace App::Common::Kubernetes {
+
+class ServicePort {
+public:
+    std::string protocol;
+    uint16_t port;
+    uint16_t targetPort;
+};
+
+class Service {
+public:
+    bool parseFromString(rapidjson::Document& document);
+
+private:
+    std::vector<std::unique_ptr<ServicePort>> ports;
+    std::map<std::string, std::string> selector;
+    std::string clusterIP;
+    std::vector<std::string> clusterIPs;
+    std::string type;
+    std::string sessionAffinity;
+    std::vector<std::string> ipFamilies;
+    std::string ipFamilyPolicy;
+    std::string internalTrafficPolicy;
+};
+}
