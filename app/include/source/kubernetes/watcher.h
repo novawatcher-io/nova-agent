@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <atomic>
+
 extern "C" {
 #include <kubernetes/config/kube_config.h>
 #include <kubernetes/include/apiClient.h>
@@ -11,12 +13,15 @@ extern "C" {
 #include <kubernetes/watch/watch_util.h>
 }
 
+#include "os/unix_countdown_latch.h"
+#include "dispatcher.h"
+#include "common/base_thread.h"
 #include "config/nova_agent_config.h"
 
 namespace App::Source::Kubernetes {
-class ServiceWatcher {
+class Watcher {
 public:
-    ServiceWatcher(std::shared_ptr<App::Config::ConfigReader>& config);
+    Watcher(std::shared_ptr<App::Config::ConfigReader>& config);
 
     void init();
 
@@ -26,9 +31,11 @@ public:
 
     void watch_list_service(apiClient_t * apiClient);
 private:
-    std::string basePath;
+    std::unique_ptr<App::Common::BaseThread> runnerThread;
+    char* basePath = nullptr;
     sslConfig_t *sslConfig = nullptr;
     list_t *apiKeys = nullptr;
     apiClient_t *apiClient = nullptr;
+    std::atomic<bool> is_shutdown_ = false;
 };
 }

@@ -22,9 +22,13 @@ public:
 
 class Service {
 public:
+    Service() = default;
+    ~Service() = default;
+    const std::vector<std::string>& toPeer();
     bool parseFromString(rapidjson::Document& document);
 
-private:
+    std::string name;
+    std::string namespaceValue;
     std::vector<std::unique_ptr<ServicePort>> ports;
     std::map<std::string, std::string> selector;
     std::string clusterIP;
@@ -34,5 +38,6 @@ private:
     std::vector<std::string> ipFamilies;
     std::string ipFamilyPolicy;
     std::string internalTrafficPolicy;
+    std::vector<std::string> peers;
 };
 }

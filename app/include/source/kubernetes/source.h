@@ -5,13 +5,13 @@
 
 #include <component/api.h>
 #include "config/nova_agent_config.h"
-#include "service_watcher.h"
+#include "watcher.h"
 
 namespace App::Source::Kubernetes {
 class Source : public Core::Component::Component {
 public:
     Source(std::shared_ptr<App::Config::ConfigReader>& config)
-    :watcher(std::make_unique<ServiceWatcher>(config)), config_(config) {
+    :watcher(std::make_unique<Watcher>(config)), config_(config) {
 
     }
     void init() final;
@@ -26,7 +26,7 @@ public:
 
     ~Source() override;
 private:
-    std::unique_ptr<ServiceWatcher> watcher;
+    std::unique_ptr<Watcher> watcher;
     const std::shared_ptr<App::Config::ConfigReader>& config_;
 };
 }

@@ -7,12 +7,15 @@
 
 #include "endpoint_source_builder.h"
 #include "common/xxhash64.h"
+#include "app/include/common/kubernetes/name_control.h"
 #include <trace/v1/topology.grpc.pb.h>
 
 namespace App::Intercept::Opentelemetry::Trace::Topology {
 class RPCTrafficSourceBuilder :public EndpointSourceBuilder {
 public:
     std::string sourceServiceName;
+
+    std::string sourceNamespace;
 
     int sourceLayer;
 

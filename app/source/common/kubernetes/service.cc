@@ -4,8 +4,38 @@
 
 #include "app/include/common/kubernetes/service.h"
 
+#include <fmt/format.h>
+
 namespace App::Common::Kubernetes {
 bool Service::parseFromString(rapidjson::Document &document) {
+    if (!document.HasMember("object")) {
+        return false;
+    }
+
+    if (!document.FindMember("object")->value.IsObject()) {
+        return false;
+    }
+
+    if (!document.FindMember("object")->value.HasMember("metadata")) {
+        return false;
+    }
+
+    if (!document.FindMember("object")->value.FindMember("metadata")->value.IsObject()) {
+        return false;
+    }
+
+    if (!document.FindMember("object")->value.FindMember("metadata")->value.HasMember("name")) {
+        return false;
+    }
+
+    auto metadata = document.FindMember("object")->value.FindMember("metadata");
+
+    name = metadata->value.FindMember("name")->value.GetString();
+    if (!metadata->value.HasMember("namespace")) {
+        return false;
+    }
+    namespaceValue = metadata->value.FindMember("namespace")->value.GetString();
+
     if (!document.HasMember("object")) {
         return false;
     }
@@ -49,6 +79,7 @@ bool Service::parseFromString(rapidjson::Document &document) {
         ports[index]->port = portIter->value.GetUint();
         ports[index]->targetPort = targetPortIter->value.GetUint();
         ports[index]->protocol = protocolIter->value.GetString();
+        index++;
     }
 
     if (spec->value.HasMember("selector")) {
@@ -75,8 +106,9 @@ bool Service::parseFromString(rapidjson::Document &document) {
     auto clusterIPsIter = spec->value.FindMember("clusterIPs");
     auto clusterIPsIterArray = clusterIPsIter->value.GetArray();
     clusterIPs.resize(clusterIPsIterArray.Size());
+    index = 0;
     for (auto &clusterIPData : clusterIPsIterArray) {
-        clusterIPs.emplace_back(clusterIPData.GetString());
+        clusterIPs[index] = clusterIPData.GetString();
     }
 
     if (!spec->value.HasMember("type")) {
@@ -120,6 +152,27 @@ bool Service::parseFromString(rapidjson::Document &document) {
         return false;
     }
     internalTrafficPolicy = spec->value.FindMember("internalTrafficPolicy")->value.GetString();
+    toPeer();
     return true;
+}
+
+const std::vector<std::string>& Service::toPeer() {
+    if (!peers.empty()) {
+        return peers;
+    }
+    // demo-order-service.demo-shopping.svc.cluster.local:8080
+    std::string domain =  fmt::format("{}.{}.svc.cluster.local", name, namespaceValue);
+    peers.emplace_back(domain);
+    for (auto &ip : clusterIPs) {
+        peers.emplace_back(ip);
+        for (auto &port : ports) {
+            auto endpoint = fmt::format("{}:{}", ip, port->port);
+            peers.emplace_back(endpoint);
+            auto domainPort = fmt::format("{}:{}", domain, port->port);
+            peers.emplace_back(domainPort);
+        }
+    }
+
+    return peers;
 }
 }

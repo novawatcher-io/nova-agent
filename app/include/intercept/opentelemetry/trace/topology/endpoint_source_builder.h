@@ -23,6 +23,8 @@ public:
 
     std::string destEndpointName;
 
+    std::string destNamespace;
+
     int latency;
 
     bool status;

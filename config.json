@@ -2,7 +2,7 @@
   "cluster": "default",
   "company_uuid": "e902c1e84b9f9b12bdf22936603acfda",
   "node_report_addr": {
-    "host": "81.71.98.26",
+    "host": "127.0.0.1",
     "port": 10050
   },
   "sampling_period": 2,
@@ -16,11 +16,11 @@
     "container_unix_domain_socket": "/var/run/crio/crio.sock"
   },
   "trace_server_config": {
-    "enable": false,
+    "enable": true,
     "address": "0.0.0.0:11800"
   },
   "host_collect_config": {
-    "enable": true
+    "enable": false
   },
   "close_stdout": false,
   "log_level": "debug",

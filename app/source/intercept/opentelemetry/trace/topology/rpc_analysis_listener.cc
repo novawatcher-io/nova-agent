@@ -45,6 +45,60 @@ App::Common::Trace::LAYER identifyRemoteServiceLayer(int spanLayer) {
     }
 }
 
+std::string instanceToIp(const std::string& instance) {
+    auto pos = instance.find('@');
+    if (pos == std::string::npos) {
+        return "";
+    } else {
+        if (pos >= instance.size()) {
+            return "";
+        }
+        return instance.substr(pos + 1);
+    }
+}
+
+void sourceNameToKubernetesName(const std::string name, const std::string& instance, std::unique_ptr<RPCTrafficSourceBuilder>& sourceBuilder) {
+    if (!name.empty()) {
+        auto pairs = Common::Kubernetes::NameControl::getInstance()->findServiceName(name);
+        if (!pairs.first.empty()) {
+            sourceBuilder->sourceServiceName = pairs.first;
+            sourceBuilder->sourceNamespace = pairs.second;
+            return;
+        }
+    }
+
+    if (!instance.empty()) {
+        auto ip = instanceToIp(instance);
+        auto pairs = Common::Kubernetes::NameControl::getInstance()->findServiceName(ip);
+        if (!pairs.first.empty()) {
+            sourceBuilder->sourceServiceName = pairs.first;
+            sourceBuilder->sourceNamespace = pairs.second;
+            return;
+        }
+    }
+}
+
+void destNameToKubernetesName(const std::string name, const std::string& instance, std::unique_ptr<RPCTrafficSourceBuilder>& sourceBuilder) {
+    if (!name.empty()) {
+        auto pairs = Common::Kubernetes::NameControl::getInstance()->findServiceName(name);
+        if (!pairs.first.empty()) {
+            sourceBuilder->destServiceName = pairs.first;
+            sourceBuilder->destNamespace = pairs.second;
+            return;
+        }
+    }
+
+    if (!instance.empty()) {
+        auto ip = instanceToIp(instance);
+        auto pairs = Common::Kubernetes::NameControl::getInstance()->findServiceName(ip);
+        if (!pairs.first.empty()) {
+            sourceBuilder->destServiceName = pairs.first;
+            sourceBuilder->destNamespace = pairs.second;
+            return;
+        }
+    }
+}
+
 void RPCAnalysisListener::parseEntry(const opentelemetry::proto::trace::v1::Span &span, const App::Common::Opentelemetry::Recordable *recordable,
                                      const std::unordered_map<std::string, ::opentelemetry::proto::common::v1::AnyValue>& spanAttr) {
     if (!enabled) {
@@ -63,6 +117,8 @@ void RPCAnalysisListener::parseEntry(const opentelemetry::proto::trace::v1::Span
     if (serviceIter != spanAttr.end()) {
         sourceBuilder->destServiceName = serviceIter->second.string_value();
     }
+    // 转换服务名字，如果是k8s环境要进行转换
+    destNameToKubernetesName(sourceBuilder->destServiceName, sourceBuilder->destServiceInstanceName, sourceBuilder);
     sourceBuilder->detectPoint = DetectPoint::SERVER;
 
 
@@ -76,7 +132,31 @@ void RPCAnalysisListener::parseEntry(const opentelemetry::proto::trace::v1::Span
             } else {
                 sourceBuilder->sourceEndpointName = parentEndpointIter->second.string_value();
             }
+
+            bool isMQ = false;
+            if (layer != spanAttr.end()  && layer->second.int_value() == skywalking::v3::SpanLayer::MQ) {
+                isMQ = true;
+            }
+            auto workAddressUsedAtPeerIter = attr.find(AttributeNetworkAddressUsedAtPeer);
+            if (isMQ) {
+                if (workAddressUsedAtPeerIter != attr.end()) {
+                    sourceBuilder->sourceServiceName = workAddressUsedAtPeerIter->second.string_value();
+                    sourceBuilder->sourceServiceInstanceName = workAddressUsedAtPeerIter->second.string_value();
+                }
+                sourceBuilder->sourceLayer = App::Common::Trace::LAYER::MQ;
+            } else {
+                auto parentServiceIter = attr.find(AttributeParentService);
+                if (parentServiceIter != attr.end()) {
+                    sourceBuilder->sourceServiceName = parentServiceIter->second.string_value();
+                }
+                auto parentInstanceIter = attr.find(AttributeParentInstance);
+                if (parentInstanceIter != attr.end()) {
+                    sourceBuilder->sourceServiceInstanceName = parentInstanceIter->second.string_value();
+                }
+                sourceBuilder->sourceLayer = App::Common::Trace::LAYER::GENERAL;
+            }
             sourceBuilder->destEndpointName = span.name();
+            sourceNameToKubernetesName(sourceBuilder->sourceServiceName, sourceBuilder->sourceServiceInstanceName, sourceBuilder);
             callingInTraffic.emplace_back(std::move(sourceBuilder));
         }
     } else if (layer != spanAttr.end() && layer->second.int_value() == skywalking::v3::SpanLayer::MQ) {
@@ -91,6 +171,7 @@ void RPCAnalysisListener::parseEntry(const opentelemetry::proto::trace::v1::Span
         if (componentIdIter != spanAttr.end()) {
             sourceBuilder->componentId = (int)componentIdIter->second.int_value();
         }
+        sourceNameToKubernetesName(sourceBuilder->sourceServiceName, sourceBuilder->sourceServiceInstanceName, sourceBuilder);
         callingInTraffic.emplace_back(std::move(sourceBuilder));
     } else {
         sourceBuilder->sourceServiceName = UserInstanceName;
@@ -102,9 +183,10 @@ void RPCAnalysisListener::parseEntry(const opentelemetry::proto::trace::v1::Span
         if (componentIdIter != spanAttr.end()) {
             sourceBuilder->componentId = (int)componentIdIter->second.int_value();
         }
+        sourceNameToKubernetesName(sourceBuilder->sourceServiceName, sourceBuilder->sourceServiceInstanceName, sourceBuilder);
         callingInTraffic.emplace_back(std::move(sourceBuilder));
     }
-    parseLogicEndpoints(span, recordable, spanAttr);
+//    parseLogicEndpoints(span, recordable, spanAttr);
 }
 
 void RPCAnalysisListener::parseLogicEndpoints(const opentelemetry::proto::trace::v1::Span& span,
@@ -154,6 +236,7 @@ const std::unordered_map<std::string, ::opentelemetry::proto::common::v1::AnyVal
     endpointSourceBuilder->latency = latency;
     endpointSourceBuilder->type = App::Common::Trace::RequestType::LOGIC;
     endpointSourceBuilder->status = status;
+
 //    sourceBuilder.setTimeBucket(TimeBucket.getMinuteTimeBucket(span.getStartTime()));
     logicEndpointBuilders.emplace_back(std::move(endpointSourceBuilder));
     parseLogicEndpoints(span, recordable, attr);
@@ -174,6 +257,7 @@ void RPCAnalysisListener::parseExit(const opentelemetry::proto::trace::v1::Span 
     if (serviceIter != attr.end()) {
         sourceBuilder->sourceServiceName = serviceIter->second.string_value();
     }
+
     auto serviceInstanceNameIter = attr.find(Common::Opentelemetry::AttributeServiceInstanceID);
     if (serviceInstanceNameIter != attr.end()) {
         sourceBuilder->sourceServiceInstanceName = serviceInstanceNameIter->second.string_value();
@@ -191,7 +275,8 @@ void RPCAnalysisListener::parseExit(const opentelemetry::proto::trace::v1::Span 
     sourceBuilder->destServiceName = peerIter->second.string_value();
     sourceBuilder->destServiceInstanceName = peerIter->second.string_value();
     sourceBuilder->destLayer = identifyRemoteServiceLayer(layer->second.int_value());
-
+    sourceNameToKubernetesName(sourceBuilder->sourceServiceName, sourceBuilder->sourceServiceInstanceName, sourceBuilder);
+    destNameToKubernetesName(sourceBuilder->destServiceName, sourceBuilder->destServiceInstanceName, sourceBuilder);
     callingOutTraffic.emplace_back(std::move(sourceBuilder));
 }
 
