@@ -21,5 +21,6 @@ const std::string error = "ERROR";
 namespace Kind {
 static std::string service = "Service";
 static std::string pod = "Pod";
+static std::string endpoint = "Endpoints";
 }
 }

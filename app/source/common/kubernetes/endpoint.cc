@@ -32,21 +32,39 @@ bool Endpoint::parseFromString(rapidjson::Document &document) {
     if (!metadata->value.HasMember("namespace")) {
         return false;
     }
-    if (!document.FindMember("object")->value.HasMember("status")) {
+    if (!metadata->value.FindMember("namespace")->value.IsString()) {
         return false;
     }
-    auto status = document.FindMember("object")->value.FindMember("status");
-    if (!status->value.IsObject()) {
-        return false;
-    }
-    if (!status->value.HasMember("podIP")) {
-        return false;
-    }
-    if (!status->value.FindMember("podIP")->value.IsString()) {
-        return false;
-    }
-    podIp = status->value.FindMember("podIP")->value.GetString();
     namespaceValue = metadata->value.FindMember("namespace")->value.GetString();
+    if (!document.FindMember("object")->value.HasMember("subsets")) {
+        return false;
+    }
+
+    if (!document.FindMember("object")->value.FindMember("subsets")->value.IsArray()) {
+        return false;
+    }
+    auto subsets = document.FindMember("object")->value.FindMember("subsets")->value.GetArray();
+    for (auto& subset : subsets) {
+        if (!subset.HasMember("addresses")) {
+            continue;
+        }
+        if (!subset.FindMember("addresses")->value.IsArray()) {
+            continue;
+        }
+        auto addressesArray = subset.FindMember("addresses")->value.GetArray();
+        for (auto& address : addressesArray) {
+            if (!address.IsObject()) {
+                continue;
+            }
+            if (!address.HasMember("ip")) {
+                continue;
+            }
+            if (!address.FindMember("ip")->value.IsString()) {
+                continue;
+            }
+            addresses.emplace_back(address.FindMember("ip")->value.GetString());
+        }
+    }
     return true;
 }
 }

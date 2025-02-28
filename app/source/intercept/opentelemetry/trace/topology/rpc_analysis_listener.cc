@@ -166,7 +166,7 @@ void RPCAnalysisListener::parseEntry(const opentelemetry::proto::trace::v1::Span
             sourceBuilder->sourceServiceInstanceName = peerIter->second.string_value();
         }
         sourceBuilder->destEndpointName = span.name();
-        sourceBuilder->sourceLayer = skywalking::v3::SpanLayer::MQ;
+        sourceBuilder->sourceLayer = App::Common::Trace::LAYER::MQ;
         auto componentIdIter = spanAttr.find(AttributeComponentId);
         if (componentIdIter != spanAttr.end()) {
             sourceBuilder->componentId = (int)componentIdIter->second.int_value();
@@ -290,16 +290,16 @@ void RPCAnalysisListener::build() {
         auto service = source->toService();
         auto exist = inLruCache->exists(service->id());
         inLruCache->put(service->id(), true);
-        if (exist) {
-            continue;
-        }
+//        if (exist) {
+//            continue;
+//        }
         sink_->registerService(*service);
         auto relation = source->toServiceRelation();
         inLruCache->put(relation->id(), true);
         exist = inLruCache->exists(service->id());
-        if (exist) {
-            continue;
-        }
+//        if (exist) {
+//            continue;
+//        }
         sink_->registerServiceRelation(*relation);
         continue;
     }

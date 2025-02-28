@@ -71,12 +71,12 @@ public:
 //        relation->set_destserviceinstancename(destServiceInstanceName);
         relation->set_destlayer(destLayer);
         if (!sourceServiceName.empty()) {
-            sourceServiceId = makeHashId(sourceServiceName + std::to_string(sourceLayer));
+            sourceServiceId = makeHashId(sourceServiceName + sourceNamespace);
         }
         relation->set_sourceserviceid(sourceServiceId);
         uint64_t destServiceId = 0;
         if (!destServiceName.empty()) {
-            destServiceId = makeHashId(destServiceName + std::to_string(destLayer));
+            destServiceId = makeHashId(destServiceName + destNamespace);
             relation->set_destserviceid(destServiceId);
         } else {
             relation->set_destserviceid(0);

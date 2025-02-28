@@ -30,12 +30,19 @@ public:
     void stop();
 
     void watch_list_service(apiClient_t * apiClient);
+
+    void watch_list_endpoints(apiClient_t * apiClient);
+
+    void watch_list_pods(apiClient_t * apiClient);
 private:
-    std::unique_ptr<App::Common::BaseThread> runnerThread;
+    std::unique_ptr<App::Common::BaseThread> runnerServiceThread;
+    std::unique_ptr<App::Common::BaseThread> runnerPodsThread;
+    std::unique_ptr<App::Common::BaseThread> runnerEndpointsThread;
     char* basePath = nullptr;
     sslConfig_t *sslConfig = nullptr;
     list_t *apiKeys = nullptr;
+    std::shared_ptr<App::Config::ConfigReader>& config_;
     apiClient_t *apiClient = nullptr;
-    std::atomic<bool> is_shutdown_ = false;
+    int timeoutSeconds = 10;    /* Watch for 30 seconds */
 };
 }

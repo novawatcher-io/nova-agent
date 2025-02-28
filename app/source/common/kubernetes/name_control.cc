@@ -67,18 +67,18 @@ Service* NameControl::get(std::string peer) {
     return serviceIter->second;
 }
 
-void NameControl::set(std::unique_ptr<Endpoint> endpoint) {
+void NameControl::set(std::unique_ptr<Pod> pod) {
     std::lock_guard<std::shared_mutex> wk(mtx);
-    endpoints[endpoint->podIp] = std::move(endpoint);
+    podIpMap[pod->podIp] = std::move(pod);
 }
 
-void NameControl::remove(std::unique_ptr<Endpoint>& endpoint) {
+void NameControl::remove(std::unique_ptr<Pod>& endpoint) {
     std::lock_guard<std::shared_mutex> wk(mtx);
-    auto iter = endpoints.find(endpoint->podIp);
-    if (iter == endpoints.end()) {
+    auto iter = podIpMap.find(endpoint->podIp);
+    if (iter == podIpMap.end()) {
         return;
     }
-    endpoints.erase(iter);
+    podIpMap.erase(iter);
 }
 
 std::pair<std::string, std::string> NameControl::findServiceName(std::string peer) {
@@ -87,10 +87,48 @@ std::pair<std::string, std::string> NameControl::findServiceName(std::string pee
         return {servicePtr->second->name, servicePtr->second->namespaceValue};
     }
 
-    auto endpointItr = endpoints.find(peer);
-    if (endpointItr != endpoints.end()) {
+    auto endpointIter = ipToEndpoints.find(peer);
+    if (endpointIter != ipToEndpoints.end()) {
+        return {endpointIter->second->name, endpointIter->second->namespaceValue};
+    }
+
+    auto endpointItr = podIpMap.find(peer);
+    if (endpointItr != podIpMap.end()) {
         return {endpointItr->second->name, endpointItr->second->namespaceValue};
     }
     return {};
+}
+
+void NameControl::set(std::unique_ptr<Endpoint> endpoint) {
+    std::lock_guard<std::shared_mutex> wk(mtx);
+    auto iter = endpoints.find(endpoint->name);
+    auto ptr = endpoint.get();
+    if (iter != endpoints.end()) {
+        for (auto& ip : iter->second->addresses) {
+            auto ipIter = ipToEndpoints.find(ip);
+            if (ipIter != ipToEndpoints.end()) {
+                ipToEndpoints.erase(ipIter);
+            }
+        }
+        endpoints.erase(iter);
+    }
+    endpoints[endpoint->name] = std::move(endpoint);
+    for (auto& ip : ptr->addresses) {
+        ipToEndpoints[ip] = ptr;
+    }
+}
+
+void NameControl::remove(std::unique_ptr<Endpoint>& endpoint) {
+    std::lock_guard<std::shared_mutex> wk(mtx);
+    auto iter = endpoints.find(endpoint->name);
+    if (iter != endpoints.end()) {
+        for (auto& ip : iter->second->addresses) {
+            auto ipIter = ipToEndpoints.find(ip);
+            if (ipIter != ipToEndpoints.end()) {
+                ipToEndpoints.erase(ipIter);
+            }
+        }
+        endpoints.erase(iter);
+    }
 }
 }
