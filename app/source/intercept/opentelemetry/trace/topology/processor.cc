@@ -1,5 +1,7 @@
 #include "app/include/intercept/opentelemetry/trace/topology/processor.h"
 
+#include <chrono>
+
 #include <opentelemetry-proto/opentelemetry/proto/collector/trace/v1/trace_service.grpc.pb.h>
 #include <opentelemetry/sdk/common/attribute_utils.h>
 
@@ -124,7 +126,8 @@ void loadResource(std::unordered_map<std::string, ::opentelemetry::proto::common
 }
 
 
-Processor::Processor(std::shared_ptr<App::Config::ConfigReader> config_) {
+Processor::Processor(std::shared_ptr<App::Config::ConfigReader> config_,
+ const std::shared_ptr<Core::Event::EventLoop>& loop_) :loop(loop_) {
     Common::Grpc::ClientOptions options;
     options.max_concurrent_requests = 1000;
     options.endpoint = config_->NodeReportHost();
@@ -177,5 +180,18 @@ Core::Component::Result Processor::intercept(Core::Component::Batch &batch) {
     return {Core::Component::SUCCESS, ""};
 }
 
+void Processor::flushMetric() {
+    SPDLOG_INFO("flushMetric");
+}
 
+void Processor::start() {
+    timer_ = std::make_shared<Core::Component::TimerChannel>(loop, [this]() {
+        flushMetric();
+    });
+    timer_->enable(std::chrono::minutes(5));
+}
+
+void Processor::stop() {
+    timer_->disable();
+}
 }

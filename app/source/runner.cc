@@ -58,7 +58,7 @@ void Runner::initMetricExporter() {
     auto reader = metric_sdk::PeriodicExportingMetricReaderFactory::Create(std::move(exporter), reader_options);
     // 创建 ResourceAttributes 对象
     opentelemetry::sdk::resource::ResourceAttributes resource_attributes{
-        {"agent_name", "deep-observe-agent"},
+        {"agent_name", "nova-agent"},
         {"service.name", GetHostname()},
         {"telemetry.sdk.version", OPENTELEMETRY_VERSION},
         {"telemetry.sdk.language", "cpp"},
@@ -99,7 +99,7 @@ void Runner::run() {
     if (config_->GetConfig().has_trace_server_config() && config_->GetConfig().trace_server_config().enable()) {
         // 调用链stream
         // 启动source
-        source = std::make_unique<App::Source::SkyWalking::Grpc::Source>(config_, exposer);
+        source = std::make_unique<App::Source::SkyWalking::Grpc::Source>(config_, exposer, loop);
         source->init();
         sourceThread->addInitCallable([&] {
             source->start();

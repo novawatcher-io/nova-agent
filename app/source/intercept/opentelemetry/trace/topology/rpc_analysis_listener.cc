@@ -7,6 +7,7 @@
 #include <opentelemetry/common/attribute_value.h>
 #include <rapidjson/document.h>
 #include <rapidjson/pointer.h>
+#include <opentelemetry/trace/span_metadata.h>
 
 #include "app/include/common/opentelemetry/util.h"
 #include "app/include/common/const.h"
@@ -109,6 +110,12 @@ void RPCAnalysisListener::parseEntry(const opentelemetry::proto::trace::v1::Span
     if (layer != spanAttr.end()) {
         sourceBuilder->destLayer = layer->second.int_value();
     }
+    if (span.status().code() == Status_StatusCode_STATUS_CODE_OK) {
+        sourceBuilder->hasError = false;
+    } else {
+        sourceBuilder->hasError = true;
+    }
+
     auto serviceInstanceNameIter = spanAttr.find(Common::Opentelemetry::AttributeServiceInstanceID);
     if (serviceInstanceNameIter != spanAttr.end()) {
         sourceBuilder->destServiceInstanceName = serviceInstanceNameIter->second.string_value();
@@ -186,7 +193,7 @@ void RPCAnalysisListener::parseEntry(const opentelemetry::proto::trace::v1::Span
         sourceNameToKubernetesName(sourceBuilder->sourceServiceName, sourceBuilder->sourceServiceInstanceName, sourceBuilder);
         callingInTraffic.emplace_back(std::move(sourceBuilder));
     }
-//    parseLogicEndpoints(span, recordable, spanAttr);
+    parseLogicEndpoints(span, recordable, spanAttr);
 }
 
 void RPCAnalysisListener::parseLogicEndpoints(const opentelemetry::proto::trace::v1::Span& span,
@@ -301,6 +308,8 @@ void RPCAnalysisListener::build() {
 //            continue;
 //        }
         sink_->registerServiceRelation(*relation);
+        serviceMetricAggregator->stats(source);
+        serviceRelationMetricAggregator->stats(source);
         continue;
     }
 
@@ -312,8 +321,15 @@ void RPCAnalysisListener::build() {
         if (exist) {
             continue;
         }
+        serviceMetricAggregator->stats(out);
+        serviceRelationMetricAggregator->stats(out);
         sink_->registerServiceRelation(*relation);
     }
     callingOutTraffic.clear();
+}
+
+void RPCAnalysisListener::flush() {
+    serviceMetricAggregator->send();
+    serviceRelationMetricAggregator->send();
 }
 }

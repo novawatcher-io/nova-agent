@@ -44,7 +44,7 @@ void Source::init() {
     std::unique_ptr<Core::Component::Interceptor> traceProcess = std::make_unique<Intercept::Opentelemetry::Trace::Skywalking::Processor>(*exposer_);
     tracePipeline->addIntercept(traceProcess);
     // 构建服务拓扑
-    std::unique_ptr<Core::Component::Interceptor> topoProcess = std::make_unique<Intercept::Opentelemetry::Trace::Topology::Processor>(config_);
+    std::unique_ptr<Core::Component::Interceptor> topoProcess = std::make_unique<Intercept::Opentelemetry::Trace::Topology::Processor>(config_, loop);
     tracePipeline->addIntercept(topoProcess);
     std::unique_ptr<Core::Component::Consumer> traceSink = std::make_unique<Sink::OpenTelemetry::Trace::Grpc::Sink>(cq_);
     tracePipeline->addConsumer(traceSink);

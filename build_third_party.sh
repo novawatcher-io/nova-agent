@@ -28,6 +28,7 @@ setup_table() {
     LIB_OPTIONS["libxml2"]="-DBUILD_SHARED_LIBS=OFF -DLIBXML2_WITH_DEBUG=OFF -DLIBXML2_WITH_HTML=OFF -DLIBXML2_WITH_HTTP=OFF -DLIBXML2_WITH_PROGRAMS=OFF -DLIBXML2_WITH_PYTHON=OFF -DLIBXML2_WITH_PYTHON=OFF -DLIBXML2_WITH_TESTS=OFF"
     LIB_OPTIONS["civetweb"]="-DCIVETWEB_BUILD_TESTING=OFF -DCIVETWEB_ENABLE_SERVER_EXECUTABLE=OFF -DCIVETWEB_DISABLE_CACHING=OFF -DCIVETWEB_ENABLE_ASAN=OFF -DCIVETWEB_INSTALL_EXECUTABLE=OFF -DCMAKE_BUILD_TYPE=Release -DCIVETWEB_ENABLE_CXX=ON"
     LIB_OPTIONS["prometheus-cpp"]="-DBUILD_SHARED_LIBS=OFF -DENABLE_TESTING=OFF -DUSE_THIRDPARTY_LIBRARIES=OFF -DTHIRDPARTY_CIVETWEB_WITH_SSL=OFF -DENABLE_PUSH=OFF -DCMAKE_BUILD_TYPE=Release"
+    LIB_OPTIONS["curl"]="-DCMAKE_C_FLAGS=-fPIC -DBUILD_SHARED_LIBS=OFF -DCURL_USE_LIBPSL=OFF  -DOPENSSL_ROOT_DIR=${THIRD_PARTY_INATALL_DIR} -DOpenSSL_DIR=${THIRD_PARTY_INATALL_DIR}/lib64/cmake/OpenSSL -DCURL_USE_OPENSSL=ON"
     LIB_OPTIONS["kubernetes-client/kubernetes"]="-DCMAKE_C_FLAGS=-fPIC -DBUILD_SHARED_LIBS=OFF"
 
     LIB_FILES["abseil-cpp"]="libabsl_base.a"
@@ -47,6 +48,7 @@ setup_table() {
     LIB_FILES["prometheus-cpp"]="libprometheus-cpp-core.a"
     LIB_FILES["libyaml"]="libyaml.a"
     LIB_FILES["kubernetes-client/kubernetes"]="libkubernetes.a"
+    LIB_FILES["curl"]="libcurl.a"
 }
 
 format_print() {
@@ -104,10 +106,10 @@ build_openssl() {
         format_print openssl $INSTALL_PREFIX/lib64/libssl.a
         return
     fi
-    echo "Building openssl..."
+    echo "Building openssl... $INSTALL_PREFIX"
     cd openssl
-    echo "./config --prefix=$INSTALL_PREFIX --openssldir=$INSTALL_PREFIX --static -static"
-    ./config --prefix=$INSTALL_PREFIX --openssldir=$INSTALL_PREFIX --static -static
+    echo "./config --prefix=$INSTALL_PREFIX --threads --openssldir=$INSTALL_PREFIX --static -debug –g3"
+    ./config --prefix=$INSTALL_PREFIX --openssldir=$INSTALL_PREFIX --static -static -d -fPIC
     make -j $(nproc)
     make install
 }
@@ -149,6 +151,7 @@ build_all() {
     (build_target_with_cmake $BUILD_ROOT "civetweb")
     (build_target_with_cmake $BUILD_ROOT "prometheus-cpp")
     (build_target_with_cmake $BUILD_ROOT "libyaml")
+    (build_target_with_cmake $BUILD_ROOT "curl")
     (build_target_with_cmake $BUILD_ROOT "kubernetes-client/kubernetes")
     (build_hwloc)
 }

@@ -88,4 +88,44 @@ void Sink::registerServiceRelation(novaagent::trace::v1::ServiceRelation &relati
     stub_->async()->RegisterServiceRelation(&call->context, &call->request, &call->response, call);
     call->StartCall();
 }
+
+void Sink::RegisterServiceMetric(novaagent::trace::v1::ServiceMetricRequest &metric) {
+    if (running_requests.load(std::memory_order_acquire) > max_concurrent_requests) {
+        SPDLOG_DEBUG("registerService full, max_concurrent_requests", max_concurrent_requests);
+        return;
+    }
+    ++running_requests;
+    auto call = new AsyncUnaryCall<novaagent::trace::v1::ServiceMetricRequest, novaagent::trace::v1::TopologyRes>(options_.metadata);
+    call->callback = [call, this](const grpc::Status& status, const TopologyRes& resp) {
+        --running_requests;
+        if (!status.ok()) {
+            SPDLOG_ERROR("registerServiceRelation error: {}", status.error_message());
+        }
+        delete (call);
+    };
+    call->request.Swap(&metric);
+    SPDLOG_DEBUG("registerServiceRelation request: {}", call->request.ShortDebugString());
+    stub_->async()->RegisterServiceMetric(&call->context, &call->request, &call->response, call);
+    call->StartCall();
+}
+
+void Sink::RegisterServiceRelationMetric(novaagent::trace::v1::ServiceRelationMetricRequest &metric) {
+    if (running_requests.load(std::memory_order_acquire) > max_concurrent_requests) {
+        SPDLOG_DEBUG("registerService full, max_concurrent_requests", max_concurrent_requests);
+        return;
+    }
+    ++running_requests;
+    auto call = new AsyncUnaryCall<novaagent::trace::v1::ServiceRelationMetricRequest, novaagent::trace::v1::TopologyRes>(options_.metadata);
+    call->callback = [call, this](const grpc::Status& status, const TopologyRes& resp) {
+        --running_requests;
+        if (!status.ok()) {
+            SPDLOG_ERROR("registerServiceRelation error: {}", status.error_message());
+        }
+        delete (call);
+    };
+    call->request.Swap(&metric);
+    SPDLOG_DEBUG("registerServiceRelation request: {}", call->request.ShortDebugString());
+    stub_->async()->RegisterServiceRelationMetric(&call->context, &call->request, &call->response, call);
+    call->StartCall();
+}
 }

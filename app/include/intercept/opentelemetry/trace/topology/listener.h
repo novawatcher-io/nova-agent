@@ -22,6 +22,8 @@ public:
 
      virtual void build() PURE;
 
+     virtual void flush() {};
+
      virtual ~Listener() {
      };
 };

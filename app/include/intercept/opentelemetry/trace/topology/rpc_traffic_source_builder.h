@@ -40,6 +40,18 @@ public:
 
     int componentId;
 
+    uint64_t sourceId = 0;
+
+    uint64_t destId = 0;
+
+    uint64_t relation_id = 0;
+
+    bool hasError = false;
+
+    std::string cluster;
+
+    uint64_t latency = 0;
+
     std::unique_ptr<novaagent::trace::v1::Service> toService() {
         std::unique_ptr<novaagent::trace::v1::Service> service = std::make_unique<novaagent::trace::v1::Service>();
         Core::Common::XXHash64 hashUtil(0);
@@ -58,6 +70,22 @@ public:
         return hashUtil.hash();
     }
 
+    uint64_t getSourceId() {
+        if (sourceId > 0) {
+            return sourceId;
+        }
+        sourceId = makeHashId(sourceServiceName + sourceNamespace);
+        return sourceId;
+    }
+
+    uint64_t getDestId() {
+        if (destId > 0) {
+            return destId;
+        }
+        destId = makeHashId(destServiceName + destNamespace);
+        return destId;
+    }
+
     std::unique_ptr<novaagent::trace::v1::ServiceRelation> toServiceRelation() {
         std::unique_ptr<novaagent::trace::v1::ServiceRelation> relation = std::make_unique<novaagent::trace::v1::ServiceRelation>();
         if (sourceServiceName.empty()) {
@@ -71,18 +99,18 @@ public:
 //        relation->set_destserviceinstancename(destServiceInstanceName);
         relation->set_destlayer(destLayer);
         if (!sourceServiceName.empty()) {
-            sourceServiceId = makeHashId(sourceServiceName + sourceNamespace);
+            sourceServiceId = getSourceId();
         }
         relation->set_sourceserviceid(sourceServiceId);
         uint64_t destServiceId = 0;
         if (!destServiceName.empty()) {
-            destServiceId = makeHashId(destServiceName + destNamespace);
+            destServiceId = getDestId();
             relation->set_destserviceid(destServiceId);
         } else {
             relation->set_destserviceid(0);
         }
         relation->set_id(makeHashId(std::to_string(sourceServiceId) + std::to_string(destServiceId)));
-
+        relation_id = relation->id();
         return relation;
     }
 };

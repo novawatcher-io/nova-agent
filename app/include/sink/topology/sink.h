@@ -17,6 +17,10 @@ public:
     void registerService(novaagent::trace::v1::Service& service);
 
     void registerServiceRelation(novaagent::trace::v1::ServiceRelation& service);
+
+    void RegisterServiceMetric(novaagent::trace::v1::ServiceMetricRequest& serviceMetric);
+
+    void RegisterServiceRelationMetric(novaagent::trace::v1::ServiceRelationMetricRequest& serviceRelationMetric);
 private:
     Common::Grpc::ClientOptions options_;
     std::unique_ptr<novaagent::trace::v1::TraceTopologyCollectorService::Stub> stub_;

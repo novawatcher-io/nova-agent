@@ -9,6 +9,10 @@
 */
 #pragma once
 
+#include <memory>
+#include <string>
+#include <event/event_loop.h>
+
 #include "app/include/common/const.h"
 #include "app/include/common/base_thread.h"
 #include "app/include/prometheus/prometheus_exposer.h"
@@ -20,8 +24,6 @@
 #include "callback/trace_server.h"
 #include <component/api.h>
 #include <grpcpp/grpcpp.h>
-#include <memory>
-#include <string>
 #include "config/nova_agent_config.h"
 
 namespace App {
@@ -35,8 +37,10 @@ class GrpcChannel;
 namespace App::Source::SkyWalking::Grpc {
 class Source : public Core::Component::Component {
 public:
-    Source(std::shared_ptr<App::Config::ConfigReader> config, std::unique_ptr<App::Prometheus::PrometheusExposer>& exposer)
-    : exposer_(exposer), config_(config) {
+    Source(std::shared_ptr<App::Config::ConfigReader> config,
+       std::unique_ptr<App::Prometheus::PrometheusExposer>& exposer,
+       const std::shared_ptr<Core::Event::EventLoop>& loop_)
+    : exposer_(exposer), config_(config), loop(loop_) {
     }
 
     std::string name() override {
@@ -73,5 +77,6 @@ private:
     std::unique_ptr<Callback::TraceServer> traceServer;
     std::unique_ptr<App::Prometheus::PrometheusExposer>& exposer_;
     std::shared_ptr<App::Config::ConfigReader> config_;
+    const std::shared_ptr<Core::Event::EventLoop>& loop;
 };
 } // namespace App::Source::SkyWalking::Grpc
