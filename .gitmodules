@@ -67,10 +67,6 @@
 [submodule "third_party/civetweb"]
 	path = third_party/civetweb
 	url = https://github.com/civetweb/civetweb.git
-[submodule "third_party/libcore"]
-	path = third_party/libcore
-	url = git@github.com:novawatcher-io/libcore.git
-	commit = 8125901
 [submodule "third_party/nova-agent-payload"]
 	path = third_party/nova-agent-payload
 	url = https://github.com/novawatcher-io/nova-agent-payload.git
@@ -86,3 +82,7 @@
 [submodule "third_party/curl"]
 	path = third_party/curl
 	url = git@github.com:curl/curl.git
+[submodule "third_party/libcore"]
+	path = third_party/libcore
+	url = git@github.com:novawatcher-io/libcore.git
+	commit = 8125901
