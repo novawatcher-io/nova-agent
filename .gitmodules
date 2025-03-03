@@ -70,6 +70,7 @@
 [submodule "third_party/nova-agent-payload"]
 	path = third_party/nova-agent-payload
 	url = https://github.com/novawatcher-io/nova-agent-payload.git
+	commit = 051c626
 [submodule "thrid_party/cpp-lru-cache"]
 	path = thrid_party/cpp-lru-cache
 	url = git@github.com:lamerman/cpp-lru-cache.git
