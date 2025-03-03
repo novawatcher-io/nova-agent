@@ -23,6 +23,8 @@ public:
 
     void stop() final;
 
+    void start() final;
+
     void flush() final;
 private:
     std::vector<std::unique_ptr<Core::Component::Consumer>> consumers;

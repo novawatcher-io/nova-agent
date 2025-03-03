@@ -115,7 +115,7 @@ void RPCAnalysisListener::parseEntry(const opentelemetry::proto::trace::v1::Span
     } else {
         sourceBuilder->hasError = true;
     }
-
+    sourceBuilder->latency = span.end_time_unix_nano() - span.start_time_unix_nano();
     auto serviceInstanceNameIter = spanAttr.find(Common::Opentelemetry::AttributeServiceInstanceID);
     if (serviceInstanceNameIter != spanAttr.end()) {
         sourceBuilder->destServiceInstanceName = serviceInstanceNameIter->second.string_value();
@@ -193,7 +193,7 @@ void RPCAnalysisListener::parseEntry(const opentelemetry::proto::trace::v1::Span
         sourceNameToKubernetesName(sourceBuilder->sourceServiceName, sourceBuilder->sourceServiceInstanceName, sourceBuilder);
         callingInTraffic.emplace_back(std::move(sourceBuilder));
     }
-    parseLogicEndpoints(span, recordable, spanAttr);
+//    parseLogicEndpoints(span, recordable, spanAttr);
 }
 
 void RPCAnalysisListener::parseLogicEndpoints(const opentelemetry::proto::trace::v1::Span& span,
@@ -321,8 +321,6 @@ void RPCAnalysisListener::build() {
         if (exist) {
             continue;
         }
-        serviceMetricAggregator->stats(out);
-        serviceRelationMetricAggregator->stats(out);
         sink_->registerServiceRelation(*relation);
     }
     callingOutTraffic.clear();

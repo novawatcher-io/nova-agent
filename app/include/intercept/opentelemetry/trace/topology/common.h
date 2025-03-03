@@ -7,6 +7,10 @@
 #include "app/include/common/const.h"
 
 namespace App::Intercept::Opentelemetry::Trace::Topology {
+typedef enum {
+    SOURCE = 1,
+    DEST = 2
+} SERVICE_TYPE;
 /**
  * Identify the layer of span's service/instance owner. Such as  ${@link Layer#FAAS} and ${@link Layer#GENERAL}.
  */

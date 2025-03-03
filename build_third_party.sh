@@ -108,7 +108,7 @@ build_openssl() {
     fi
     echo "Building openssl... $INSTALL_PREFIX"
     cd openssl
-    echo "./config --prefix=$INSTALL_PREFIX --threads --openssldir=$INSTALL_PREFIX --static -debug –g3"
+    echo "./config --prefix=$INSTALL_PREFIX --threads --openssldir=$INSTALL_PREFIX --static -static"
     ./config --prefix=$INSTALL_PREFIX --openssldir=$INSTALL_PREFIX --static -static -d -fPIC
     make -j $(nproc)
     make install

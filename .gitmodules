@@ -70,7 +70,7 @@
 [submodule "third_party/libcore"]
 	path = third_party/libcore
 	url = git@github.com:novawatcher-io/libcore.git
-	commit = 0944513
+	commit = 8125901
 [submodule "third_party/nova-agent-payload"]
 	path = third_party/nova-agent-payload
 	url = https://github.com/novawatcher-io/nova-agent-payload.git

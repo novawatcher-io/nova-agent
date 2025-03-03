@@ -182,13 +182,18 @@ Core::Component::Result Processor::intercept(Core::Component::Batch &batch) {
 
 void Processor::flushMetric() {
     SPDLOG_INFO("flushMetric");
+    for (auto& listener : listenerManager->list()) {
+        listener->flush();
+    }
 }
 
 void Processor::start() {
     timer_ = std::make_shared<Core::Component::TimerChannel>(loop, [this]() {
         flushMetric();
+        timer_->enable(std::chrono::seconds(5));
     });
-    timer_->enable(std::chrono::minutes(5));
+//    timer_->enable(std::chrono::minutes(5));
+    timer_->enable(std::chrono::seconds(5));
 }
 
 void Processor::stop() {

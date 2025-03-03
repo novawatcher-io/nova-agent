@@ -54,10 +54,7 @@ public:
 
     std::unique_ptr<novaagent::trace::v1::Service> toService() {
         std::unique_ptr<novaagent::trace::v1::Service> service = std::make_unique<novaagent::trace::v1::Service>();
-        Core::Common::XXHash64 hashUtil(0);
-        std::string key = destServiceName + std::to_string(destLayer);
-        hashUtil.add(key.data(), key.length());
-        service->set_id(hashUtil.hash());
+        service->set_id(getDestId());
         service->set_name(destServiceName);
 //        service->set_serviceinstancename(destServiceInstanceName);
         service->set_type(std::to_string(type));

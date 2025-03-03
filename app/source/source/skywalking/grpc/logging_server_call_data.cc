@@ -21,7 +21,6 @@ void LoggingServerCallData::onProcess() {
         if (times > 1) {
             handleData();
         }
-        std::cout << object.DebugString() << std::endl;
         reader.Read(&object, this);
     }
 }

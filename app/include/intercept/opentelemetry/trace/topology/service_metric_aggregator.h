@@ -25,7 +25,7 @@ public:
     ~ServiceMetricAggregator();
 
 private:
-    void loadMetric(uint64_t id, const std::unique_ptr<RPCTrafficSourceBuilder>& builder);
+    void loadMetric(uint64_t id, const std::unique_ptr<RPCTrafficSourceBuilder>& builder, int flags);
 
     std::map<uint64_t, std::unique_ptr<novaagent::trace::v1::ServiceMetric>> metricCache;
     std::mutex mtx;

@@ -186,7 +186,6 @@ struct std::unique_ptr<mount_entry> BasicFileReader::ReadFileSystemList(bool nee
             struct stat buf;
             int ret = stat(target, &buf);
             if (ret == -1) {
-                std::cout << ret << std::endl;
                 continue;
             }
 

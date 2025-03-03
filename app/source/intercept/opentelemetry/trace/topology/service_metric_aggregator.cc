@@ -4,6 +4,7 @@
 #include "app/include/intercept/opentelemetry/trace/topology/service_metric_aggregator.h"
 
 #include <spdlog/spdlog.h>
+#include "app/include/intercept/opentelemetry/trace/topology/common.h"
 
 namespace App::Intercept::Opentelemetry::Trace::Topology {
 ServiceMetricAggregator::ServiceMetricAggregator(uint32_t maxSize_, const std::unique_ptr<Sink::Topology::Sink> &sink)
@@ -18,15 +19,15 @@ void ServiceMetricAggregator::stats(const std::unique_ptr<RPCTrafficSourceBuilde
         return;
     }
     if (builder->getSourceId() > 0) {
-        loadMetric(builder->getSourceId(), builder);
+//        loadMetric(builder->getSourceId(), builder, SERVICE_TYPE::SOURCE);
     }
 
     if (builder->getDestId() > 0) {
-        loadMetric(builder->getDestId(), builder);
+        loadMetric(builder->getDestId(), builder, SERVICE_TYPE::DEST);
     }
 }
 
-void ServiceMetricAggregator::loadMetric(uint64_t id, const std::unique_ptr<RPCTrafficSourceBuilder>& builder) {
+void ServiceMetricAggregator::loadMetric(uint64_t id, const std::unique_ptr<RPCTrafficSourceBuilder>& builder, int flags) {
     auto iter = metricCache.find(id);
 
     if (iter == metricCache.end()) {
@@ -35,15 +36,29 @@ void ServiceMetricAggregator::loadMetric(uint64_t id, const std::unique_ptr<RPCT
     }
 
     auto& metric = iter->second;
-    metric->set_name(builder->sourceServiceName);
-    metric->set_namespace_(builder->sourceNamespace);
+    metric->set_id(id);
+    if (flags == SERVICE_TYPE::SOURCE) {
+        if (builder->sourceServiceName.empty()) {
+            return;
+        }
+        metric->set_name(builder->sourceServiceName);
+        metric->set_namespace_(builder->sourceNamespace);
+    } else {
+        if (builder->destServiceName.empty()) {
+            return;
+        }
+        metric->set_name(builder->destServiceName);
+        metric->set_namespace_(builder->destNamespace);
+    }
     metric->set_cluster(builder->cluster);
     uint64_t request_count;
     request_count = metric->request_count();
-    metric->set_request_count(request_count++);
-    if (!builder->hasError) {
+    request_count++;
+    metric->set_request_count(request_count);
+    if (builder->hasError) {
       uint64_t error_count = metric->error_count();
-      metric->set_error_count(error_count++);
+      error_count++;
+      metric->set_error_count(error_count);
     }
     uint64_t latency = metric->avg_time();
     double avg_time = (double)(latency + builder->latency) / 2;

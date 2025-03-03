@@ -45,6 +45,22 @@ public:
         return false;
     }
 
+    void start() {
+        if (!interceptors.empty()) {
+            for (auto begin = interceptors.begin(); begin != interceptors.end(); begin++) {
+                (*begin)->start();
+            }
+        }
+    }
+
+    void stop() {
+        if (!interceptors.empty()) {
+            for (auto begin = interceptors.begin(); begin != interceptors.end(); begin++) {
+                (*begin)->stop();
+            }
+        }
+    }
+
     const std::unique_ptr<Core::Component::Batch>& flushBatch() {
         std::vector<std::unique_ptr<Core::Component::EventData>> buffer;
         buffer_.swap(buffer);

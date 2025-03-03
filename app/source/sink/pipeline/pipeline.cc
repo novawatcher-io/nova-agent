@@ -41,7 +41,12 @@ void Pipeline::flush() {
     }
 }
 
+void Pipeline::start() {
+    chain->start();
+}
+
 void Pipeline::stop() {
+    chain->stop();
     if (consumers.empty()) {
         return;
     }

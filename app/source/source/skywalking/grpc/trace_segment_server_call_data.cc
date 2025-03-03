@@ -8,7 +8,6 @@ void TraceSegmentServerCallData::onProcess() {
     // Spawn a new CallData instance to serve new clients while we process
     // the one for this CallData. The instance will deallocate itself as
     // part of its FINISH state.
-    std::cout << times << std::endl;
     if (times == 0) {
         new TraceSegmentServerCallData(cq_, service, pipeline_);
         reader.Read(&object, this);

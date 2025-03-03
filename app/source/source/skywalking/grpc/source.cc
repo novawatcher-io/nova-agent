@@ -79,6 +79,7 @@ void Source::init() {
 }
 
 void Source::start() {
+    tracePipelinePtr->start();
     server_->Wait();
     SPDLOG_INFO("server finish shutdown...");
 }
