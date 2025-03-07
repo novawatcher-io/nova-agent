@@ -181,7 +181,7 @@ Core::Component::Result Processor::intercept(Core::Component::Batch &batch) {
 }
 
 void Processor::flushMetric() {
-    SPDLOG_INFO("flushMetric");
+    SPDLOG_DEBUG("flushMetric");
     for (auto& listener : listenerManager->list()) {
         listener->flush();
     }

@@ -36,8 +36,6 @@ public:
     void watch_list_pods(apiClient_t * apiClient);
 private:
     std::unique_ptr<App::Common::BaseThread> runnerServiceThread;
-    std::unique_ptr<App::Common::BaseThread> runnerPodsThread;
-    std::unique_ptr<App::Common::BaseThread> runnerEndpointsThread;
     char* basePath = nullptr;
     sslConfig_t *sslConfig = nullptr;
     list_t *apiKeys = nullptr;

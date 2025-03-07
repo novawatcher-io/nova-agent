@@ -124,6 +124,10 @@ void RPCAnalysisListener::parseEntry(const opentelemetry::proto::trace::v1::Span
     if (serviceIter != spanAttr.end()) {
         sourceBuilder->destServiceName = serviceIter->second.string_value();
     }
+    auto componentIdIter = spanAttr.find(AttributeComponentId);
+    if (componentIdIter != spanAttr.end()) {
+        sourceBuilder->componentId = (int)componentIdIter->second.int_value();
+    }
     // 转换服务名字，如果是k8s环境要进行转换
     destNameToKubernetesName(sourceBuilder->destServiceName, sourceBuilder->destServiceInstanceName, sourceBuilder);
     sourceBuilder->detectPoint = DetectPoint::SERVER;
@@ -174,10 +178,6 @@ void RPCAnalysisListener::parseEntry(const opentelemetry::proto::trace::v1::Span
         }
         sourceBuilder->destEndpointName = span.name();
         sourceBuilder->sourceLayer = App::Common::Trace::LAYER::MQ;
-        auto componentIdIter = spanAttr.find(AttributeComponentId);
-        if (componentIdIter != spanAttr.end()) {
-            sourceBuilder->componentId = (int)componentIdIter->second.int_value();
-        }
         sourceNameToKubernetesName(sourceBuilder->sourceServiceName, sourceBuilder->sourceServiceInstanceName, sourceBuilder);
         callingInTraffic.emplace_back(std::move(sourceBuilder));
     } else {
@@ -186,10 +186,6 @@ void RPCAnalysisListener::parseEntry(const opentelemetry::proto::trace::v1::Span
         sourceBuilder->sourceEndpointName = UserEndpointName;
         sourceBuilder->sourceLayer = 0;
         sourceBuilder->destEndpointName = span.name();
-        auto componentIdIter = spanAttr.find(AttributeComponentId);
-        if (componentIdIter != spanAttr.end()) {
-            sourceBuilder->componentId = (int)componentIdIter->second.int_value();
-        }
         sourceNameToKubernetesName(sourceBuilder->sourceServiceName, sourceBuilder->sourceServiceInstanceName, sourceBuilder);
         callingInTraffic.emplace_back(std::move(sourceBuilder));
     }
@@ -297,17 +293,16 @@ void RPCAnalysisListener::build() {
         auto service = source->toService();
         auto exist = inLruCache->exists(service->id());
         inLruCache->put(service->id(), true);
-//        if (exist) {
-//            continue;
-//        }
-        sink_->registerService(*service);
+        if (!exist) {
+            sink_->registerService(*service);
+        }
         auto relation = source->toServiceRelation();
         inLruCache->put(relation->id(), true);
         exist = inLruCache->exists(service->id());
-//        if (exist) {
-//            continue;
-//        }
-        sink_->registerServiceRelation(*relation);
+        if (!exist) {
+            sink_->registerServiceRelation(*relation);
+        }
+
         serviceMetricAggregator->stats(source);
         serviceRelationMetricAggregator->stats(source);
         continue;
@@ -317,6 +312,18 @@ void RPCAnalysisListener::build() {
 
     for (auto& out : callingOutTraffic) {
         auto relation = out->toServiceRelation();
+        // 如果不是普通请求，也不是Unknown则需要统计请求数目，因为可能是mysql一类的
+        if (relation->destlayer() != App::Common::Trace::LAYER::UNDEFINED && relation->destlayer() != App::Common::Trace::LAYER::GENERAL) {
+            serviceMetricAggregator->stats(out);
+            serviceRelationMetricAggregator->stats(out);
+        } else {
+            // 不是trace的服务，这样就不会在entry又统计一次，所以要+1
+            auto pairs = Common::Kubernetes::NameControl::getInstance()->findServiceName(out->destServiceName);
+            if (pairs.first == "") {
+                serviceMetricAggregator->stats(out);
+                serviceRelationMetricAggregator->stats(out);
+            }
+        }
         auto exist = outLruCache->exists(relation->id());
         if (exist) {
             continue;

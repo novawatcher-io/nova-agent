@@ -91,6 +91,7 @@ public:
         uint64_t sourceServiceId = 0;
         relation->set_sourcelayer(sourceLayer);
         relation->set_sourceservicename(sourceServiceName);
+        relation->set_componentid(std::to_string(componentId));
 //        relation->set_sourceserviceinstancename(sourceServiceInstanceName);
         relation->set_destservicename(destServiceName);
 //        relation->set_destserviceinstancename(destServiceInstanceName);

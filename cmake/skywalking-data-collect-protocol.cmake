@@ -165,6 +165,9 @@ set(SERVICE_MESH_PROBE_SERVICE_MESH_PB_H_FILE
 set(TRACING_GRPC_PB_CPP_FILE
         "${GENERATED_PROTOBUF_PATH}/language-agent/Tracing.grpc.pb.cc"
         )
+set(CLRMetric_GRPC_PB_CPP_FILE
+        "${GENERATED_PROTOBUF_PATH}/language-agent/CLRMetric.grpc.pb.cc"
+)
 set(JVMMETRIC_GRPC_PB_H_FILE
         "${GENERATED_PROTOBUF_PATH}/language-agent/JVMMetric.grpc.pb.h"
         )
@@ -294,6 +297,7 @@ list(
         ${LOGGING_LOGGING_GRPC_PB_H_FILE}
         ${LOGGING_LOGGING_GRPC_PB_CPP_FILE}
         ${JVMMETRIC_GRPC_PB_H_FILE}
+        ${CLRMetric_GRPC_PB_CPP_FILE}
         ${JVMMETRIC_GRPC_PB_CPP_FILE}
         ${CONFIGURATION_DISCOVERY_SERVICE_GRPC_PB_CPP_FILE}
         ${CONFIGURATION_DISCOVERY_SERVICE_GRPC_PB_H_FILE}

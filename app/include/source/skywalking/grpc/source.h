@@ -25,6 +25,7 @@
 #include <component/api.h>
 #include <grpcpp/grpcpp.h>
 #include "config/nova_agent_config.h"
+#include "callback/clr_metric_server.h"
 
 namespace App {
 namespace Sink {
@@ -74,6 +75,7 @@ private:
     std::unique_ptr<Callback::LogReportServer> logReportService;
     std::unique_ptr<Callback::MeterReportServer> meterReportService;
     std::unique_ptr<Callback::ManagementServer> managementService;
+    std::unique_ptr<Callback::CLRMetricServer> clrMetricServer;
     std::unique_ptr<Callback::TraceServer> traceServer;
     std::unique_ptr<App::Prometheus::PrometheusExposer>& exposer_;
     std::shared_ptr<App::Config::ConfigReader> config_;

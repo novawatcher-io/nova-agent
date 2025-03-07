@@ -21,6 +21,7 @@
 #include "source/skywalking/grpc/callback/log_report_server.h"
 #include "source/skywalking/grpc/callback/management_server.h"
 #include "source/skywalking/grpc/callback/meter_report_server.h"
+#include "source/skywalking/grpc/callback/clr_metric_server.h"
 
 using grpc::ServerBuilder;
 using grpc::Server;
@@ -67,12 +68,14 @@ void Source::init() {
     logReportService = std::make_unique<Callback::LogReportServer>(std::move(logPipeline));
     meterReportService = std::make_unique<Callback::MeterReportServer>();
     managementService = std::make_unique<Callback::ManagementServer>();
+    clrMetricServer = std::make_unique<Callback::CLRMetricServer>();
     builder.RegisterService(traceServer.get());
     builder.RegisterService(configurationDiscoveryService.get());
     builder.RegisterService(jvmMetricReportService.get());
     builder.RegisterService(logReportService.get());
     builder.RegisterService(meterReportService.get());
     builder.RegisterService(managementService.get());
+    builder.RegisterService(clrMetricServer.get());
 
 
     server_ = builder.BuildAndStart();

@@ -11,6 +11,9 @@ Core::Component::Result Sink::Consume(Core::Component::Batch& batch) {
     if (batch.events().empty()) {
         return {};
     }
+    if (is_shutdown_) {
+        return {};
+    }
 
     std::vector<std::unique_ptr<Common::Opentelemetry::OtlpMetricResource>> metric_array(batch.events().size());
     for (size_t i = 0; i < batch.events().size(); i++) {

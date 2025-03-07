@@ -99,7 +99,7 @@ void Sink::RegisterServiceMetric(novaagent::trace::v1::ServiceMetricRequest &met
     call->callback = [call, this](const grpc::Status& status, const TopologyRes& resp) {
         --running_requests;
         if (!status.ok()) {
-            SPDLOG_ERROR("registerServiceRelation error: {}", status.error_message());
+            SPDLOG_ERROR("registerServiceRelationMetric error: {}", status.error_message());
         }
         delete (call);
     };
@@ -119,7 +119,7 @@ void Sink::RegisterServiceRelationMetric(novaagent::trace::v1::ServiceRelationMe
     call->callback = [call, this](const grpc::Status& status, const TopologyRes& resp) {
         --running_requests;
         if (!status.ok()) {
-            SPDLOG_ERROR("registerServiceRelation error: {}", status.error_message());
+            SPDLOG_ERROR("RegisterServiceRelationMetric error: {}", status.error_message());
         }
         delete (call);
     };

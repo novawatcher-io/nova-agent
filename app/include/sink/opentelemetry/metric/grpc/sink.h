@@ -47,6 +47,7 @@ public:
     }
 
     void stop() final {
+        is_shutdown_ = true;
         client->Shutdown();
     }
 
@@ -57,6 +58,8 @@ private:
     std::unique_ptr<MetricsService::Stub> metric_service_stub_;
     std::unique_ptr<grpc::CompletionQueue>& cq_;
     std::unique_ptr<OtlpGrpcClient> client;
+    // Stores if this gRPC client had its Shutdown() method called
+    std::atomic<bool> is_shutdown_;
 };
 } // namespace Grpc
 } // namespace Metric

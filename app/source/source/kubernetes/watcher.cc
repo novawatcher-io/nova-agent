@@ -19,6 +19,7 @@ namespace App::Source::Kubernetes {
 
 static std::map<std::string, std::unique_ptr<Dispatcher>> dispatchers;
 
+std::atomic<bool> is_shutdown_ = false;
 
 Watcher::Watcher(std::shared_ptr<App::Config::ConfigReader>& config) :config_(config) {
     if (config->GetConfig().has_kubernetes_discovery_config()) {
@@ -27,8 +28,6 @@ Watcher::Watcher(std::shared_ptr<App::Config::ConfigReader>& config) :config_(co
         memcpy(basePath, config->GetConfig().kubernetes_discovery_config().kube_config().c_str(), size);
     }
     runnerServiceThread = std::make_unique<App::Common::BaseThread>();
-    runnerPodsThread = std::make_unique<App::Common::BaseThread>();
-    runnerEndpointsThread = std::make_unique<App::Common::BaseThread>();
 }
 
 std::mutex mutex;
@@ -100,7 +99,9 @@ void my_watch_handler(void **pData, long *pDataLen)
 
 void Watcher::watch_list_endpoints(apiClient_t * apiClient)
 {
-
+    if (!is_shutdown_) {
+        return;
+    }
     int watch = 1;
 
     CoreV1API_listEndpointsForAllNamespaces(apiClient,   /*namespace */
@@ -118,7 +119,6 @@ void Watcher::watch_list_endpoints(apiClient_t * apiClient)
         );
 }
 
-std::atomic<bool> is_shutdown_ = false;
 
 
 
@@ -131,6 +131,9 @@ static int my_watch_progress_func(void *clientp, curl_off_t dltotal, curl_off_t 
 }
 void Watcher::watch_list_pods(apiClient_t * apiClient)
 {
+    if (!is_shutdown_) {
+        return;
+    }
     int watch = 1;
     // int timeoutSeconds = 0;  /* Set timeoutSeconds to 0 to keep watching and not exit */
     CoreV1API_listPodForAllNamespaces(apiClient,   /*namespace */
@@ -150,7 +153,9 @@ void Watcher::watch_list_pods(apiClient_t * apiClient)
 
 void Watcher::watch_list_service(apiClient_t * apiClient)
 {
-
+    if (!is_shutdown_) {
+        return;
+    }
     int watch = 1;
     // int timeoutSeconds = 0;  /* Set timeoutSeconds to 0 to keep watching and not exit */
     CoreV1API_listServiceForAllNamespaces(apiClient,   /*namespace */
@@ -205,14 +210,13 @@ void Watcher::start() {
 
 void Watcher::stop() {
     is_shutdown_ = true;
+    runnerServiceThread->stop();
     apiClient_free(apiClient);
     free_client_config(basePath, sslConfig, apiKeys);
     basePath = NULL;
     sslConfig = NULL;
     apiKeys = NULL;
-    runnerServiceThread->stop();
-    runnerEndpointsThread->stop();
-    runnerPodsThread->stop();
+
 //    apiClient_unsetupGlobalEnv();
 
 }

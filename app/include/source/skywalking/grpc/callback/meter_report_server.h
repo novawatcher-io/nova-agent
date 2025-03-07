@@ -16,7 +16,11 @@ public:
     // Reporting meter data in bulk mode as MeterDataCollection.
     // By using this, each one in the stream would be treated as a complete input for MAL engine,
     // comparing to `collect (stream MeterData)`, which is using one stream as an input data set.
-    ::grpc::Status collectBatch(::grpc::ServerContext*, ::grpc::ServerReader< ::skywalking::v3::MeterDataCollection>*, ::skywalking::v3::Commands*) {
+    ::grpc::Status collectBatch(::grpc::ServerContext*, ::grpc::ServerReader< ::skywalking::v3::MeterDataCollection>* reader, ::skywalking::v3::Commands*) {
+        ::skywalking::v3::MeterDataCollection collection;
+         while (reader->Read(&collection)) {
+
+         }
         return ::grpc::Status::OK;
     }
 };
