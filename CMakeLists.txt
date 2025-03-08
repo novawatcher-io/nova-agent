@@ -216,7 +216,7 @@ target_link_libraries(
             kubernetes
             yaml
             uuid
-            /home/zhanglei/project/nova/nova-agent/.build/installed/lib/libcurl-d.a
+            libcurl.a
             stduuid
             absl::strings
             absl::base
