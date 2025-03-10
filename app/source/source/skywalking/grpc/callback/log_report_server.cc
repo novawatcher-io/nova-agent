@@ -14,7 +14,7 @@ using namespace ::skywalking::v3;
         // SPDLOG_INFO("trace server token: {}", it->second.data());
         authentication = it->second;
     } else {
-        SPDLOG_WARN("trace server token is empty");
+        SPDLOG_TRACE("trace server token is empty");
         return ::grpc::Status::OK;
     }
 

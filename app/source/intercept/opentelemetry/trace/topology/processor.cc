@@ -187,16 +187,29 @@ void Processor::flushMetric() {
     }
 }
 
+void Processor::clearTopologyMetric() {
+    SPDLOG_DEBUG("clearTopologyMetric");
+    for (auto& listener : listenerManager->list()) {
+        listener->clear();
+    }
+}
+
 void Processor::start() {
     timer_ = std::make_shared<Core::Component::TimerChannel>(loop, [this]() {
         flushMetric();
-        timer_->enable(std::chrono::seconds(5));
+        timer_->enable(std::chrono::seconds(60));
+    });
+    clearMetricTimer_ = std::make_shared<Core::Component::TimerChannel>(loop, [this]() {
+        clearTopologyMetric();
+        clearMetricTimer_->enable(std::chrono::seconds(60));
     });
 //    timer_->enable(std::chrono::minutes(5));
-    timer_->enable(std::chrono::seconds(5));
+    timer_->enable(std::chrono::seconds(60));
+    clearMetricTimer_->enable(std::chrono::seconds(300));
 }
 
 void Processor::stop() {
     timer_->disable();
+    clearMetricTimer_->disable();
 }
 }

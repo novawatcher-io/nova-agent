@@ -34,6 +34,8 @@ public:
 
     void flush() final;
 
+    void clear() final;
+
     virtual ~RPCAnalysisListener() {
     }
 

@@ -325,6 +325,7 @@ void RPCAnalysisListener::build() {
             }
         }
         auto exist = outLruCache->exists(relation->id());
+         outLruCache->put(relation->id(), true);
         if (exist) {
             continue;
         }
@@ -336,5 +337,10 @@ void RPCAnalysisListener::build() {
 void RPCAnalysisListener::flush() {
     serviceMetricAggregator->send();
     serviceRelationMetricAggregator->send();
+}
+
+void RPCAnalysisListener::clear() {
+    inLruCache->clear();
+    outLruCache->clear();
 }
 }

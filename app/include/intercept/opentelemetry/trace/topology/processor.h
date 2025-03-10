@@ -33,9 +33,12 @@ public:
 private:
     // 刷新指标
     void flushMetric();
+    // 刷新指标
+    void clearTopologyMetric();
     std::unique_ptr<ListenerManager> listenerManager;
     std::unique_ptr<Sink::Topology::Sink> sink;
     std::shared_ptr<Core::Component::TimerChannel> timer_;
+    std::shared_ptr<Core::Component::TimerChannel> clearMetricTimer_;
     const std::shared_ptr<Core::Event::EventLoop>& loop;
 };
 }

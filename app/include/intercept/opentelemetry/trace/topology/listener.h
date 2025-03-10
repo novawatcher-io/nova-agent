@@ -24,6 +24,8 @@ public:
 
      virtual void flush() {};
 
+     virtual void clear() {};
+
      virtual ~Listener() {
      };
 };

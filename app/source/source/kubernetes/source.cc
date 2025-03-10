@@ -5,14 +5,32 @@
 
 namespace App::Source::Kubernetes {
 void Source::init() {
+    if (!config_->GetConfig().has_kubernetes_discovery_config()) {
+        return;
+    }
+    if (!config_->GetConfig().kubernetes_discovery_config().enable()) {
+        return;
+    }
     watcher->init();
 }
 
 void Source::start() {
+    if (!config_->GetConfig().has_kubernetes_discovery_config()) {
+        return;
+    }
+    if (!config_->GetConfig().kubernetes_discovery_config().enable()) {
+        return;
+    }
     watcher->start();
 };
 
 void Source::stop() {
+    if (!config_->GetConfig().has_kubernetes_discovery_config()) {
+        return;
+    }
+    if (!config_->GetConfig().kubernetes_discovery_config().enable()) {
+        return;
+    }
     watcher->stop();
 };
 
