@@ -21,8 +21,17 @@ extern "C" {
 
 namespace App {
 namespace Common {
+static std::mutex mtx;
+static uint64_t objectId = 0;
 //  读取主机id，用来区分不同物理机，先读取/etc/machineid，如果读不到则把cpuid和物理网卡地址做xxhash
 inline static uint64_t getMachineId() {
+    if (objectId > 0) {
+        return objectId;
+    }
+    std::lock_guard guard(mtx);
+    if (objectId > 0) {
+        return objectId;
+    }
     // 优先读取 /etc/machine-id 文件
     Core::Common::XXHash64 hashUtil(0);
     std::ifstream machine_id_file("/etc/machine-id");
@@ -31,7 +40,8 @@ inline static uint64_t getMachineId() {
         std::getline(machine_id_file, machine_id);
         machine_id_file.close();
         hashUtil.add(machine_id.data(), machine_id.length());
-        return hashUtil.hash();
+        objectId = hashUtil.hash();
+        return objectId;
     }
 
     // 如果无法读取 /etc/machine-id 文件，则尝试获取 CPUID 和物理网卡地址
@@ -60,7 +70,8 @@ inline static uint64_t getMachineId() {
     }
     freeifaddrs(ifaddr);
     hashUtil.add(ss.str().data(), ss.str().length());
-    return hashUtil.hash();
+    objectId = hashUtil.hash();
+    return objectId;
 }
 }
 }

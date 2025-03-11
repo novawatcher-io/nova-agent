@@ -5,6 +5,9 @@
 
 #include <spdlog/spdlog.h>
 
+#include "app/include/common/machine.h"
+#include "app/include/intercept/opentelemetry/trace/topology/common.h"
+
 namespace App::Intercept::Opentelemetry::Trace::Topology {
 
 ServiceRelationMetricAggregator::ServiceRelationMetricAggregator(uint32_t maxSize_, const std::unique_ptr<Sink::Topology::Sink> &sink)
@@ -71,6 +74,7 @@ void ServiceRelationMetricAggregator::send() {
     for (; iter != metricCache.end(); iter++) {
         auto metric = request.add_servicerelationmetric();
         metric->set_id(iter->second->id());
+        metric->set_objectid(Common::getMachineId());
         metric->set_sourceservicename(iter->second->sourceservicename());
         metric->set_sourcenamespace(iter->second->sourcenamespace());
         metric->set_sourceserviceinstancename(iter->second->sourceserviceinstancename());
@@ -83,6 +87,11 @@ void ServiceRelationMetricAggregator::send() {
         metric->set_request_count(iter->second->request_count());
         metric->set_error_count(iter->second->error_count());
         metric->set_avg_time(iter->second->avg_time());
+        metric->set_objectid(Common::getMachineId());
+        std::chrono::milliseconds ms = std::chrono::duration_cast< std::chrono::milliseconds >(
+            std::chrono::system_clock::now().time_since_epoch()
+        );
+        metric->set_time(ms.count());
 
         if (sum > batchSize) {
             sink_->RegisterServiceRelationMetric(request);

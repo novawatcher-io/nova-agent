@@ -67,10 +67,6 @@
 [submodule "third_party/civetweb"]
 	path = third_party/civetweb
 	url = https://github.com/civetweb/civetweb.git
-[submodule "third_party/nova-agent-payload"]
-	path = third_party/nova-agent-payload
-	url = https://github.com/novawatcher-io/nova-agent-payload.git
-	commit = 051c626
 [submodule "thrid_party/cpp-lru-cache"]
 	path = thrid_party/cpp-lru-cache
 	url = git@github.com:lamerman/cpp-lru-cache.git
@@ -87,3 +83,7 @@
 	path = third_party/libcore
 	url = git@github.com:novawatcher-io/libcore.git
 	commit = 8125901
+[submodule "third_party/nova-agent-payload"]
+	path = third_party/nova-agent-payload
+	url = https://github.com/novawatcher-io/nova-agent-payload.git
+	commit = 4a4d63c
